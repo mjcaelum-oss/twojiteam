@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>랜덤 점심 메뉴 추천</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        #menu {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+        #recent-menus {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>랜덤 점심 메뉴 추천</h1>
+    <div>
+        <button onclick="setCuisine('korean')">한식</button>
+        <button onclick="setCuisine('western')">양식</button>
+        <button onclick="setCuisine('chinese')">중식</button>
+    </div>
+    <button onclick="recommendMenu()">메뉴 추천</button>
+    <div id="menu"></div>
+    <div id="recent-menus">
+        <h2>최근 추천 메뉴</h2>
+        <ul id="recent-list"></ul>
+    </div>
+
+    <script>
+        const menus = {
+            korean: [
+                '김치찌개',
+                '비빔밥',
+                '제육볶음',
+                '된장찌개',
+                '불고기',
+                '삼겹살',
+                '떡볶이'
+            ],
+            western: [
+                '샌드위치',
+                '파스타',
+                '햄버거',
+                '피자',
+                '스테이크'
+            ],
+            chinese: [
+                '짜장면',
+                '짬뽕',
+                '탕수육',
+                '마파두부',
+                '볶음밥'
+            ]
+        };
+
+        let selectedCuisine = 'korean';
+        let recentMenus = [];
+
+        function setCuisine(cuisine) {
+            selectedCuisine = cuisine;
+        }
+
+        function recommendMenu() {
+            const selectedMenus = menus[selectedCuisine];
+            const randomIndex = Math.floor(Math.random() * selectedMenus.length);
+            const selectedMenu = selectedMenus[randomIndex];
+            document.getElementById('menu').innerText = selectedMenu;
+
+            recentMenus.unshift(selectedMenu);
+            if (recentMenus.length > 5) {
+                recentMenus.pop();
+            }
+
+            updateRecentMenus();
+        }
+
+        function updateRecentMenus() {
+            const recentList = document.getElementById('recent-list');
+            recentList.innerHTML = '';
+            recentMenus.forEach(menu => {
+                const li = document.createElement('li');
+                li.innerText = menu;
+                recentList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
