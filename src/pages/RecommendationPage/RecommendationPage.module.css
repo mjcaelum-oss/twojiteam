@@ -1,11 +1,12 @@
 .page { padding-bottom: 3rem; }
-.layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); gap: 1rem; align-items: stretch; }
-.panel { padding: 1.5rem; display: flex; flex-direction: column; min-height: 590px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius-xl); box-shadow: var(--shadow); }
-.cards { display: grid; gap: .75rem; }
-.actions { display: flex; gap: .6rem; margin-top: auto; padding-top: 1.25rem; flex-wrap: wrap; }
+.layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); gap: 1rem; align-items: start; }
+.mapCol { position: sticky; top: 76px; align-self: start; }
+.panel { padding: 1.5rem; display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: var(--radius-xl); box-shadow: var(--shadow); }
+.cards { display: grid; gap: .9rem; }
+.actions { display: flex; gap: .6rem; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--line); flex-wrap: wrap; }
 .actions button:nth-child(2) { flex: 1; }
-.selected { margin-top: 1.5rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+.selected { margin-top: 1.25rem; border-top: 1px solid var(--line); padding-top: 1rem; }
 .selected h3 { margin: 0 0 .5rem; font-size: 1rem; }
 .selected ol { margin: 0; padding-left: 1.3rem; color: var(--muted); }
 .selected p { color: var(--muted); }
-@media (max-width: 760px) { .layout { grid-template-columns: 1fr; } .panel { min-height: 500px; } }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .mapCol { position: static; } }
