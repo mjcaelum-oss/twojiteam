@@ -8,13 +8,13 @@ import { TravelMap } from '../../features/map/components/TravelMap';
 import { RecommendationCard } from '../../features/recommendations/components/RecommendationCard';
 import type { ScoredSpot } from '../../features/recommendations/recommendation.types';
 import { getSpots } from '../../features/recommendations/recommendation.service';
-import { agentRecommendationsToSpots, recommendWithAgent } from '../../services/openai/recommendationAgent.service';
+import { openAIRecommendationsToSpots, requestOpenAIRecommendations } from '../../services/openai/openaiRecommendation.service';
 import { useTravelPlan } from '../../app/providers/TravelPlanProvider';
 import styles from './RecommendationPage.module.css';
 
 export function RecommendationPage() {
   const navigate = useNavigate(); const { plan, addSpot } = useTravelPlan(); const [candidates, setCandidates] = useState<ScoredSpot[]>([]); const [rejected, setRejected] = useState<string[]>([]); const [current, setCurrent] = useState<ScoredSpot | undefined>(); const [error, setError] = useState(''); const [loading, setLoading] = useState(false);
-  useEffect(() => { if (!plan) { navigate('/'); return; } let active = true; setLoading(true); setError(''); void getSpots(plan.destination).then(async (spots) => { const response = await recommendWithAgent({ destination: plan.destination, preferences: plan.preferences, spots, selectedIds: plan.spots.map((item) => item.spot.id), rejectedIds: rejected, previousSpotId: plan.spots.at(-1)?.spot.id }); if (active) setCandidates(agentRecommendationsToSpots(response, spots)); }).catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : '관광지 추천에 실패했습니다.'); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [navigate, plan, rejected]);
+  useEffect(() => { if (!plan) { navigate('/'); return; } let active = true; setLoading(true); setError(''); void getSpots(plan.destination).then(async (spots) => { const response = await requestOpenAIRecommendations({ destination: plan.destination, preferences: plan.preferences, spots, selectedIds: plan.spots.map((item) => item.spot.id), rejectedIds: rejected, previousSpotId: plan.spots.at(-1)?.spot.id }); if (active) setCandidates(openAIRecommendationsToSpots(response, spots)); }).catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : 'OpenAI 추천에 실패했습니다.'); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [navigate, plan, rejected]);
   const choose = (spot: ScoredSpot) => { setCurrent(spot); };
   const reject = (spot: ScoredSpot) => { setRejected((ids) => [...ids, spot.id]); if (current?.id === spot.id) setCurrent(undefined); };
   if (!plan) return null;
