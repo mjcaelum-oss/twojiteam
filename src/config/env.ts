@@ -3,6 +3,7 @@ const dataMode = import.meta.env.VITE_DATA_MODE === 'supabase' ? 'supabase' : 'm
 export const env = {
   dataMode,
   googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? '',
+  recommendationAgentUrl: import.meta.env.VITE_RECOMMENDATION_AGENT_URL ?? '',
   supabaseUrl: import.meta.env.VITE_SUPABASE_URL ?? '',
   supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY ?? '',
   tourApiEnabled: import.meta.env.VITE_TOUR_API_ENABLED === 'true',

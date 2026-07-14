@@ -1,7 +1,7 @@
-import { spots as mockSpots } from '../../data/mock/spots';
-import { spotDetails } from '../../data/mock/spotDetails';
+import { searchTouristSpots } from '../../services/google/googlePlaces.service';
 import type { Spot } from '../../types/spot';
+import type { Destination } from '../../types/travelPlan';
 
-export async function getSpots(): Promise<Spot[]> {
-  return mockSpots.map((spot) => ({ ...spot, ...spotDetails[spot.id] }));
+export async function getSpots(destination: Destination): Promise<Spot[]> {
+  return searchTouristSpots(destination);
 }

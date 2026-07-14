@@ -18,7 +18,7 @@ npm run dev
 
 ## 환경변수와 데이터 모드
 
-`.env.local`에 `.env.example`의 값을 넣습니다. 기본 `VITE_DATA_MODE=mock`에서는 Supabase 없이 실행되며 기존 프로토타입 흐름을 확인할 수 있습니다. `VITE_DATA_MODE=supabase`로 바꾸면 Supabase 설정이 없을 때 명확한 오류를 보여줍니다.
+`.env.local`에 `.env.example`의 값을 넣습니다. 관광지 데이터는 mock 목록을 사용하지 않고 Google Places에서 조회합니다. `VITE_DATA_MODE=supabase`는 여행 계획 저장소 선택에만 사용하며, Supabase 설정이 없을 때 명확한 오류를 보여줍니다.
 
 | 변수 | 용도 | 브라우저 공개 여부 |
 | --- | --- | --- |
@@ -26,6 +26,7 @@ npm run dev
 | `VITE_SUPABASE_URL` | Supabase URL | 공개 가능 |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon key | 공개 가능하지만 RLS 필수 |
 | `VITE_GOOGLE_MAPS_API_KEY` | Maps JavaScript API 브라우저 키 | 공개되는 값이며 referrer/API 제한 필수 |
+| `VITE_RECOMMENDATION_AGENT_URL` | GPT 추천 서버 endpoint | 공개 가능; GPT 키는 서버에만 저장 |
 | `VITE_TOUR_API_ENABLED` | 관광 API 사용 여부 | 공개 가능 |
 | `VITE_API_BASE_URL` | 서버/Edge Function 주소 | 공개 가능 |
 
@@ -35,7 +36,7 @@ npm run dev
 
 `supabase/migrations/20260714000000_initial_schema.sql`은 `spots`, `travel_plans`, `travel_plan_spots`와 소유자 기준 RLS 정책을 만들고, `supabase/seed.sql`은 개발용 관광지 3곳을 넣습니다.
 
-Supabase CLI가 설치되어 있다면 프로젝트 연결 후 migration과 seed를 적용합니다. 인증을 연결하지 않은 현재 화면에서는 mock/localStorage 저장을 기본으로 유지합니다. Supabase 저장을 실제 사용하려면 Anonymous Sign-In 또는 별도 인증 흐름을 먼저 켜야 합니다.
+Supabase CLI가 설치되어 있다면 프로젝트 연결 후 migration과 seed를 적용합니다. `20260714010000_clear_registered_spots.sql`은 기존 관광지 레코드를 삭제하며, 새 관광지는 Google Places에서 실시간으로 수집합니다. 인증을 연결하지 않은 현재 화면에서는 localStorage 저장을 기본으로 유지합니다. Supabase 저장을 실제 사용하려면 Anonymous Sign-In 또는 별도 인증 흐름을 먼저 켜야 합니다.
 
 ## 폴더 안내
 
@@ -46,9 +47,9 @@ Supabase CLI가 설치되어 있다면 프로젝트 연결 후 migration과 seed
 
 ## 현재 구현과 남은 작업
 
-구현된 범위는 검색 조건(지역 fallback, 취향, 날짜, 시각, 인원), mock 추천 점수와 후보 제외, 지도 로더/마커 fallback, 계획 선택·삭제·순서 변경·이동수단 선택, 시간 경고, 비용/시간 요약, localStorage repository, Supabase client/repository 인터페이스입니다.
+구현된 범위는 검색 조건(지역, 취향, 날짜, 시각, 인원), Google Places Nearby Search 후보 수집·도메인 변환, GPT 추천 agent client, 지도 로더/마커 fallback, 계획 선택·삭제·순서 변경·이동수단 선택, 시간 경고, 비용/시간 요약, localStorage repository, Supabase client/repository 인터페이스입니다.
 
-아직 실제 Places Autocomplete/Text Search, Directions 결과를 화면 데이터에 연결하는 작업, TourAPI 서버 프록시, 익명 로그인, 공유 링크, Day 자동 분할, 사진 표시, 완전한 Supabase plan-spot 저장은 남아 있습니다. 가짜 UI로 숨기지 않고 인터페이스와 README에 상태를 기록했습니다.
+아직 GPT 추천 서버 endpoint 구현, Places 상세/사진 표시, Directions 결과 연결, 익명 로그인, 공유 링크, Day 자동 분할, 완전한 Supabase plan-spot 저장은 남아 있습니다. GPT endpoint는 `POST /api/recommendations`로 `RecommendationAgentInput`을 받고 `{ recommendations: [{ spotId, reason }] }`을 반환해야 합니다. 서버는 OpenAI Responses API의 구조화된 JSON 응답을 사용하고 `OPENAI_API_KEY`를 서버 환경변수로만 읽어야 합니다.
 
 ## Google Maps 키 보안
 

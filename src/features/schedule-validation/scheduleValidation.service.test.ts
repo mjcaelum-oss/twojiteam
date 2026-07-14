@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { spots } from '../../data/mock/spots';
+import type { Spot } from '../../types/spot';
 import type { TravelPlan } from '../../types/travelPlan';
 import { buildSchedule, validateSchedule } from './scheduleValidation.service';
 
-const plan: TravelPlan = { id: 'test', title: 'test', destination: { name: '서울', latitude: 37.5, longitude: 127 }, travelDate: '2026-07-14', startTime: '17:30', preferences: { style: 'culture', pace: 'slow', companion: 'solo' }, partySize: 1, spots: [{ spot: spots[0], visitOrder: 1 }, { spot: spots[1], visitOrder: 2 }], routes: [{ durationMinutes: 20, distanceMeters: 5000, cost: 0 },], status: 'draft' };
+const spot: Spot = { id: 'spot', name: '테스트 장소', region: '서울', latitude: 37.5, longitude: 127, category: 'culture', tags: ['culture'], description: '', feeAmount: 0, feeNote: '', durationMinutes: 90, openingHours: { weekly: { 2: { open: '09:00', close: '18:00' } } }, popularity: .8, source: 'places' };
+const plan: TravelPlan = { id: 'test', title: 'test', destination: { name: '서울', latitude: 37.5, longitude: 127 }, travelDate: '2026-07-14', startTime: '17:30', preferences: { style: 'culture', pace: 'slow', companion: 'solo' }, partySize: 1, spots: [{ spot, visitOrder: 1 }, { spot: { ...spot, id: 'spot-2', name: '테스트 장소 2' }, visitOrder: 2 }], routes: [{ durationMinutes: 20, distanceMeters: 5000, cost: 0 }], status: 'draft' };
 
 describe('schedule validation', () => {
   it('calculates arrival and departure in order', () => { const result = buildSchedule(plan); expect(result).toHaveLength(2); expect(result[1].arrival.getTime()).toBeGreaterThan(result[0].departure.getTime()); });
