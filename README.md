@@ -26,7 +26,7 @@ npm run dev
 | `VITE_SUPABASE_URL` | Supabase URL | 공개 가능 |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon key | 공개 가능하지만 RLS 필수 |
 | `VITE_GOOGLE_MAPS_API_KEY` | Maps JavaScript API 브라우저 키 | 공개되는 값이며 referrer/API 제한 필수 |
-| `VITE_RECOMMENDATION_AGENT_URL` | GPT 추천 서버 endpoint, 기본값 `/api/recommendations` | 공개 가능; GPT 키는 서버에만 저장 |
+| `VITE_OPENAI_RECOMMENDATION_URL` | `/api/recommendations` (비워도 기본값 사용) | 공개 가능; OpenAI 키를 넣지 않음 |
 | `VITE_TOUR_API_ENABLED` | 관광 API 사용 여부 | 공개 가능 |
 | `VITE_API_BASE_URL` | 서버/Edge Function 주소 | 공개 가능 |
 | `OPENAI_API_KEY` | Vercel Function에서 OpenAI 호출 | 서버 전용 |
@@ -49,9 +49,9 @@ Supabase CLI가 설치되어 있다면 프로젝트 연결 후 migration과 seed
 
 ## 현재 구현과 남은 작업
 
-구현된 범위는 검색 조건(지역, 취향, 날짜, 시각, 인원), Google Places Nearby Search 후보 수집·도메인 변환, GPT 추천 agent client, 지도 로더/마커 fallback, 계획 선택·삭제·순서 변경·이동수단 선택, 시간 경고, 비용/시간 요약, localStorage repository, Supabase client/repository 인터페이스입니다.
+구현된 범위는 검색 조건(지역, 취향, 날짜, 시각, 인원), Google Places Nearby Search 후보 수집·도메인 변환, OpenAI 추천 client, 지도 로더/마커 fallback, 계획 선택·삭제·순서 변경·이동수단 선택, 시간 경고, 비용/시간 요약, localStorage repository, Supabase client/repository 인터페이스입니다.
 
-GPT 추천 서버 endpoint는 `api/recommendations.js`로 구현했습니다. Vercel Project Settings에서 `OPENAI_API_KEY`를 서버 환경변수로 설정하고 재배포해야 합니다. 프론트는 기본적으로 같은 배포의 `/api/recommendations`에 POST합니다.
+OpenAI 호출은 `api/recommendations.js`에서 직접 처리합니다. 별도의 recommendation agent 서버는 사용하지 않습니다. Vercel Project Settings에서 `OPENAI_API_KEY`를 서버 환경변수로 설정하고 재배포해야 합니다. 프론트는 기본적으로 같은 배포의 `/api/recommendations`에 POST합니다.
 
 ## Google Maps 키 보안
 

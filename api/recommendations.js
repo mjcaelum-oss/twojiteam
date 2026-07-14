@@ -37,7 +37,7 @@ export default async function handler(request, response) {
       headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
-        instructions: 'You are a travel recommendation agent. Choose up to 3 candidates only from the supplied spots. Respect destination, travel style, pace, companion, selectedIds, rejectedIds, and previousSpotId. Never invent spot IDs. Return concise Korean reasons.',
+        instructions: 'Choose up to 3 travel spots only from the supplied candidates. Respect destination, travel style, pace, companion, selectedIds, rejectedIds, and previousSpotId. Never invent spot IDs. Return concise Korean reasons.',
         input: JSON.stringify({ destination: input.destination, preferences: input.preferences, selectedIds: input.selectedIds || [], rejectedIds: input.rejectedIds || [], previousSpotId: input.previousSpotId || null, spots: candidates }),
         text: { format: { type: 'json_schema', name: 'travel_recommendations', strict: true, schema: recommendationSchema } }
       })
@@ -50,6 +50,6 @@ export default async function handler(request, response) {
     const recommendations = (parsed?.recommendations || []).filter((item) => validIds.has(item.spotId)).slice(0, 3);
     return sendJson(response, 200, { recommendations });
   } catch (error) {
-    return sendJson(response, 500, { error: error instanceof Error ? error.message : 'Recommendation agent failed.' });
+    return sendJson(response, 500, { error: error instanceof Error ? error.message : 'OpenAI recommendation failed.' });
   }
 }
