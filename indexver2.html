@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>오늘의 국내 여행지 추천 · TRAVELPICK (ver2 test)</title>
+  <style>
+    :root{
+      --bg:#ffffff; --surface:#f9f
+      afb; --blue:#3b82f6; --blue-strong:#2f6fed; --blue-dark:#1746b0;
+      --blue-soft:#eff4ff; --ink:#1a1a1a; --muted:#6b7280; --line:#e5e7eb; --pin:#ef5b68;
+      --radius:16px; --shadow:0 4px 12px rgba(0,0,0,.05); --shadow-lg:0 10px 30px rgba(23,32,51,.08);
+      --font:'Pretendard','Inter','Noto Sans KR',system-ui,-apple-system,"Segoe UI",sans-serif;
+    }
+    *{box-sizing:border-box;}
+    [hidden]{display:none!important;}
+    body{margin:0;color:var(--ink);background:var(--bg);font:15px/1.6 var(--font);-webkit-font-smoothing:antialiased;}
+    h1,h2,h3,h4{margin:0;line-height:1.25;}
+    button{font:inherit;cursor:pointer;}
+    a{color:var(--blue-strong);}
+    .muted{color:var(--muted);}
+    .optional{color:var(--muted);font-size:.8rem;font-weight:600;margin-left:.35rem;}
+
+    /* ---------- 공통 버튼/입력 ---------- */
+    .btn{border:none;border-radius:12px;padding:.85rem 1.4rem;font-weight:700;font-size:.95rem;transition:.15s;}
+    .btn-primary{background:var(--blue);color:#fff;}
+    .btn-primary:hover:not(:disabled){background:var(--blue-strong);}
+    .btn-primary:disabled{opacity:.45;cursor:not-allowed;}
+    .btn-secondary{background:#fff;color:var(--blue-strong);border:1px solid var(--line);}
+    .btn-secondary:hover{border-color:var(--blue);background:var(--blue-soft);}
+    .btn-block{display:block;width:100%;}
+    .btn-pill{border-radius:999px;}
+    .input{width:100%;min-height:50px;padding:.75rem 1rem;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font:inherit;transition:.15s;}
+    .input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.15);}
+    textarea.input{min-height:96px;resize:vertical;}
+    .icon-round{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:999px;background:var(--blue);color:#fff;border:none;}
+    .icon-round svg{width:20px;height:20px;}
+    svg{display:block;}
+
+    /* ---------- 상단바 ---------- */
+    .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+      padding:.85rem clamp(1rem,4vw,2.5rem);background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
+    .brand{display:flex;align-items:center;gap:.5rem;font-weight:800;letter-spacing:.02em;}
+    .brand .dot{width:22px;height:22px;border-radius:7px;background:var(--blue);display:inline-grid;place-items:center;color:#fff;}
+    .brand .dot svg{width:14px;height:14px;}
+    .avatar-btn{width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:var(--blue-soft);color:var(--blue-strong);font-weight:800;display:grid;place-items:center;}
+
+    .page{width:min(100% - 2rem,1080px);margin:0 auto;padding:clamp(1.5rem,4vw,3rem) 0;}
+    .page-narrow{width:min(100% - 2rem,640px);}
+
+    /* ---------- 1Page 로그인 ---------- */
+    .auth-wrap{min-height:calc(100vh - 0px);display:grid;place-items:center;padding:2rem 1rem;}
+    .auth-card{width:min(100%,400px);text-align:center;}
+    .auth-logo{width:60px;height:60px;border-radius:18px;background:var(--blue);color:#fff;display:grid;place-items:center;margin:0 auto 1rem;}
+    .auth-logo svg{width:30px;height:30px;}
+    .auth-card h1{font-size:1.6rem;}
+    .auth-card .sub{margin:.4rem 0 2rem;color:var(--muted);}
+    .auth-card .field{text-align:left;margin-bottom:.85rem;}
+    .auth-card label{display:block;font-size:.85rem;font-weight:700;color:var(--muted);margin-bottom:.35rem;}
+    .auth-card .btn-primary{margin-top:.5rem;}
+    .divider{display:flex;align-items:center;gap:.75rem;color:var(--muted);font-size:.85rem;margin:1.75rem 0 1.25rem;}
+    .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line);}
+    .social-row{display:flex;justify-content:center;gap:1.25rem;margin-bottom:1.75rem;}
+    .social-btn{width:52px;height:52px;border-radius:999px;border:none;display:grid;place-items:center;transition:.15s;}
+    .social-btn:hover{transform:translateY(-2px);}
+    .social-btn svg{width:26px;height:26px;}
+    .s-apple{background:#000;color:#fff;} .s-naver{background:#03c75a;color:#fff;} .s-kakao{background:#fee500;color:#3c1e1e;}
+    .signup-link{font-size:.9rem;color:var(--muted);}
+    .signup-link a{font-weight:700;text-decoration:none;}
+    .mock-tag{display:inline-block;margin-top:1.5rem;font-size:.72rem;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:.25rem .7rem;}
+
+    /* ---------- 2Page 여행지 선택 ---------- */
+    .q-section{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.1rem;}
+    .q-title{font-size:1.05rem;font-weight:800;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
+    .q-num{width:26px;height:26px;flex:none;border-radius:999px;background:var(--blue-soft);color:var(--blue-strong);font-size:.85rem;font-weight:800;display:grid;place-items:center;}
+    .chips{display:flex;flex-wrap:wrap;gap:.6rem;}
+    .chip{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:.6rem 1.1rem;font-weight:600;font-size:.92rem;transition:.15s;}
+    .chip:hover{border-color:var(--blue);}
+    .chip.selected{background:var(--blue);border-color:var(--blue);color:#fff;}
+    .pace{padding:.25rem .25rem 0;}
+    .pace input[type=range]{width:100%;accent-color:var(--blue);height:6px;}
+    .pace-labels{display:flex;justify-content:space-between;margin-top:.6rem;color:var(--muted);font-size:.85rem;font-weight:600;}
+    .pace-labels span.active{color:var(--blue-strong);font-weight:800;}
+    .select-actions{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(255,255,255,0),#fff 35%);padding:1rem 0 .25rem;}
+
+    /* ---------- 공통 2열(지도+패널) ---------- */
+    .two-col{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr);gap:1.1rem;align-items:start;}
+    .map-col{position:sticky;top:76px;align-self:start;}
+    .map-panel{position:relative;min-height:560px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);background:var(--blue-soft);}
+    #map{width:100%;height:100%;min-height:560px;}
+    #map-status{position:absolute;inset:0;display:grid;place-items:center;padding:2rem;text-align:center;color:var(--muted);background:var(--blue-soft);}
+    .api-error{position:absolute;left:1rem;right:1rem;bottom:1rem;z-index:2;padding:.8rem 1rem;border:1px solid #f3b4b4;border-radius:11px;background:#fff1f1;color:#9b1c1c;font-size:.88rem;}
+    .panel{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.35rem;}
+
+    /* ---------- 3Page 추천 카드 ---------- */
+    .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;}
+    .step-pill{font-size:.8rem;font-weight:800;color:var(--blue-strong);background:var(--blue-soft);border-radius:999px;padding:.3rem .75rem;}
+    .rec-list{display:flex;flex-direction:column;gap:.9rem;}
+    .rec-card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;transition:.15s;cursor:pointer;}
+    .rec-card:hover{border-color:var(--blue);box-shadow:var(--shadow);}
+    .rec-card.current{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.18);}
+    .rec-thumb{position:relative;height:104px;background:linear-gradient(135deg,#eaf1ff,#dbe7ff);display:grid;place-items:center;}
+    .rec-thumb .initial{font-size:2.2rem;font-weight:800;color:var(--blue-strong);opacity:.85;}
+    .rec-thumb .pin{position:absolute;left:12px;top:12px;width:26px;height:26px;border-radius:999px;background:#fff;color:var(--blue);display:grid;place-items:center;box-shadow:var(--shadow);}
+    .rec-thumb .pin svg{width:15px;height:15px;}
+    .time-badge{position:absolute;right:12px;top:12px;display:flex;align-items:center;gap:.3rem;background:#fff;color:var(--blue-strong);border-radius:999px;padding:.28rem .6rem;font-size:.76rem;font-weight:700;box-shadow:var(--shadow);}
+    .time-badge svg{width:14px;height:14px;}
+    .rec-body{padding:.85rem 1rem 1rem;}
+    .rec-title{display:flex;align-items:center;gap:.4rem;font-weight:800;font-size:1.02rem;}
+    .badge{font-size:.68rem;font-weight:800;color:var(--blue-strong);background:var(--blue-soft);border-radius:999px;padding:.15rem .5rem;}
+    .rec-desc{color:var(--muted);font-size:.88rem;margin:.25rem 0 .55rem;}
+    .tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.75rem;}
+    .tag{font-size:.76rem;color:var(--blue-strong);background:var(--blue-soft);border-radius:6px;padding:.15rem .45rem;font-weight:600;}
+    .rec-actions{display:flex;gap:.5rem;}
+    .heart-btn,.detail-btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:.5rem .8rem;font-weight:700;font-size:.85rem;display:inline-flex;align-items:center;gap:.35rem;color:var(--ink);}
+    .heart-btn svg{width:17px;height:17px;}
+    .heart-btn.liked{color:var(--pin);border-color:var(--pin);background:#fff5f6;}
+    .detail-btn{color:var(--muted);}
+    .rec-empty{color:var(--muted);text-align:center;padding:2rem 1rem;}
+
+    .route-modes{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line);}
+    .route-modes h4{font-size:.92rem;margin-bottom:.6rem;}
+    .mode-row{display:flex;gap:.5rem;flex-wrap:wrap;}
+    .mode-chip{border:1px solid var(--line);background:#fff;border-radius:10px;padding:.5rem .9rem;font-weight:700;font-size:.85rem;display:inline-flex;align-items:center;gap:.4rem;color:var(--ink);}
+    .mode-chip svg{width:16px;height:16px;}
+    .mode-chip.selected{border-color:var(--blue);background:var(--blue-soft);color:var(--blue-strong);}
+    #route-status{margin:.6rem 0 0;color:var(--muted);font-size:.85rem;}
+    .selected-list{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line);}
+    .selected-list h4{font-size:.92rem;margin-bottom:.5rem;}
+    .selected-list ol{margin:0;padding-left:1.2rem;color:var(--muted);font-size:.9rem;}
+    .selected-list li+li{margin-top:.25rem;}
+    .actions{display:flex;gap:.55rem;margin-top:1.1rem;}
+    .actions .btn{flex:1;padding:.8rem .5rem;}
+
+    /* ---------- 4Page 티켓 타임라인 ---------- */
+    .review-total{background:var(--blue-soft);border-radius:12px;padding:.9rem 1.1rem;margin-bottom:1.1rem;color:var(--ink);}
+    .timeline{list-style:none;margin:0;padding:0;}
+    .tl-node{margin:0;}
+    .ticket{position:relative;display:flex;gap:.9rem;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:.9rem 1rem;box-shadow:var(--shadow);}
+    .ticket::before,.ticket::after{content:"";position:absolute;top:50%;width:16px;height:16px;background:var(--surface);border:1px solid var(--line);border-radius:999px;transform:translateY(-50%);}
+    .ticket::before{left:-9px;} .ticket::after{right:-9px;}
+    .ticket-index{width:30px;height:30px;flex:none;border-radius:999px;background:var(--blue);color:#fff;font-weight:800;display:grid;place-items:center;}
+    .thumb-mini{width:44px;height:44px;flex:none;border-radius:11px;background:linear-gradient(135deg,#eaf1ff,#dbe7ff);color:var(--blue-strong);font-weight:800;display:grid;place-items:center;}
+    .ticket-name{font-weight:800;}
+    .ticket-sub{color:var(--muted);font-size:.83rem;display:flex;align-items:center;gap:.3rem;}
+    .ticket-sub svg{width:13px;height:13px;}
+    .tl-leg{position:relative;display:flex;justify-content:center;padding:.55rem 0;margin-left:15px;}
+    .tl-leg::before{content:"";position:absolute;left:0;top:0;bottom:0;border-left:2px dashed var(--blue);opacity:.5;}
+    .leg-badge{display:inline-flex;align-items:center;gap:.4rem;background:#fff;border:1px solid var(--line);border-radius:999px;padding:.35rem .8rem;font-size:.82rem;font-weight:700;color:var(--blue-strong);box-shadow:var(--shadow);}
+    .leg-badge svg{width:15px;height:15px;}
+
+    /* ---------- mypage ---------- */
+    .profile{display:flex;align-items:center;gap:1.1rem;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.4rem;margin-bottom:1.75rem;}
+    .avatar-lg{width:88px;height:88px;flex:none;border-radius:999px;background:var(--blue-soft);color:var(--blue-strong);font-size:2rem;font-weight:800;display:grid;place-items:center;border:3px solid #fff;box-shadow:var(--shadow);}
+    .profile-info{flex:1;}
+    .profile-info .name{font-size:1.25rem;font-weight:800;}
+    .profile-info .id{color:var(--blue-strong);font-weight:600;font-size:.9rem;}
+    .profile-info .phone{color:var(--muted);font-size:.9rem;margin-top:.15rem;}
+    .section-title{font-size:1.15rem;font-weight:800;margin:0 0 1rem;}
+    .mp-section{margin-bottom:2rem;}
+    .card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+    .saved-card{position:relative;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:var(--shadow);overflow:hidden;}
+    .saved-thumb{height:96px;background:linear-gradient(135deg,#eaf1ff,#dbe7ff);display:grid;place-items:center;color:var(--blue-strong);font-weight:800;font-size:1.5rem;}
+    .saved-body{padding:.85rem .9rem 1rem;}
+    .saved-name{font-weight:800;font-size:.98rem;}
+    .saved-meta{color:var(--muted);font-size:.82rem;margin-top:.2rem;}
+    .share-btn{position:absolute;right:10px;top:10px;width:34px;height:34px;border-radius:999px;background:var(--blue);color:#fff;border:none;display:grid;place-items:center;box-shadow:var(--shadow);}
+    .share-btn svg{width:16px;height:16px;}
+    .like-card{display:flex;align-items:center;justify-content:space-between;gap:.5rem;border:1px solid var(--line);border-radius:12px;background:#fff;padding:.75rem .9rem;box-shadow:var(--shadow);}
+    .like-card .lc-left{display:flex;align-items:center;gap:.6rem;font-weight:700;}
+    .like-card .lc-thumb{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#eaf1ff,#dbe7ff);color:var(--blue-strong);font-weight:800;display:grid;place-items:center;}
+    .lc-actions{display:flex;gap:.4rem;}
+    .lc-actions button{width:34px;height:34px;border-radius:999px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;}
+    .lc-actions .liked{color:var(--pin);border-color:var(--pin);background:#fff5f6;}
+    .lc-actions svg{width:16px;height:16px;}
+    .back-btn{display:inline-flex;align-items:center;gap:.35rem;background:none;border:none;color:var(--muted);font-weight:700;padding:.25rem 0 1rem;}
+    .back-btn svg{width:18px;height:18px;}
+    .saved-card{cursor:pointer;transition:.15s;}
+    .saved-card:hover{border-color:var(--blue);box-shadow:var(--shadow-lg);}
+
+    /* ---------- 저장된 코스 상세 ---------- */
+    .course-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.5rem;}
+    .course-item{display:flex;gap:1rem;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:1.1rem;margin-bottom:.9rem;}
+    .ci-index{width:30px;height:30px;flex:none;border-radius:999px;background:var(--blue);color:#fff;font-weight:800;display:grid;place-items:center;}
+    .ci-thumb{width:56px;height:56px;flex:none;border-radius:12px;background:linear-gradient(135deg,#eaf1ff,#dbe7ff);color:var(--blue-strong);font-weight:800;font-size:1.3rem;display:grid;place-items:center;}
+    .ci-body{flex:1;min-width:0;}
+    .ci-name{font-weight:800;font-size:1.05rem;}
+    .ci-region{color:var(--muted);font-size:.85rem;margin-top:.1rem;}
+    .ci-desc{margin:.45rem 0 .6rem;font-size:.9rem;}
+    .ci-meta{display:flex;flex-wrap:wrap;gap:.4rem .9rem;color:var(--muted);font-size:.83rem;}
+    .ci-meta span,.ci-addr{display:inline-flex;align-items:center;gap:.3rem;}
+    .ci-meta svg,.ci-addr svg{width:14px;height:14px;flex:none;}
+    .ci-addr{color:var(--muted);font-size:.83rem;margin-top:.4rem;}
+
+    /* ---------- 토스트 ---------- */
+    .toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:.75rem 1.2rem;border-radius:999px;font-size:.9rem;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:50;box-shadow:var(--shadow-lg);}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    /* ---------- 반응형 ---------- */
+    @media (max-width:900px){
+      .two-col{grid-template-columns:1fr;}
+      .map-col{position:static;}
+      .map-panel,#map{min-height:380px;}
+      .card-grid{grid-template-columns:repeat(2,1fr);}
+    }
+    @media (max-width:600px){
+      .card-grid{grid-template-columns:1fr;}
+      .social-row{gap:1rem;}
+      .actions{flex-wrap:wrap;}
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== 상단바 ===== -->
+  <header class="topbar" id="topbar" hidden>
+    <div class="brand"><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>TRAVEL PICK</div>
+    <button class="avatar-btn" id="topbar-avatar" type="button" aria-label="마이페이지">여</button>
+  </header>
+
+  <main>
+    <!-- ===== 1Page 로그인 ===== -->
+    <section id="login-page" class="auth-wrap" aria-labelledby="login-title">
+      <div class="auth-card">
+        <div class="auth-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+        <h1 id="login-title">TRAVEL PICK</h1>
+        <p class="sub">국내 여행지를 취향에 맞게 골라보세요</p>
+        <div class="field">
+          <label for="login-email">이메일</label>
+          <input class="input" id="login-email" type="email" placeholder="you@example.com" autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="login-password">비밀번호</label>
+          <input class="input" id="login-password" type="password" placeholder="비밀번호" autocomplete="current-password">
+        </div>
+        <button class="btn btn-primary btn-block btn-pill" id="login-submit" type="button">로그인</button>
+        <div class="divider">또는</div>
+        <div class="social-row">
+          <button class="social-btn s-apple" type="button" aria-label="Apple로 로그인">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.51 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          </button>
+          <button class="social-btn s-naver" type="button" aria-label="네이버로 로그인">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.6 12.6 8.2 2H2v20h6.4V11.4L15.8 22H22V2h-6.4z"/></svg>
+          </button>
+          <button class="social-btn s-kakao" type="button" aria-label="카카오톡으로 로그인">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.8 1.9 5.2 4.8 6.6-.2.7-.7 2.6-.8 3-.1.4.2.4.3.3.2-.1 2.8-1.9 3.9-2.7.6.1 1.2.1 1.8.1 5.5 0 10-3.6 10-8S17.5 3 12 3z"/></svg>
+          </button>
+        </div>
+        <p class="signup-link">아직 회원이 아니신가요? <a href="#" id="signup-link">회원가입</a></p>
+        <span class="mock-tag">테스트용 목업 · 실제 인증 없음</span>
+      </div>
+    </section>
+
+    <!-- ===== 2Page 여행지 선택 ===== -->
+    <section id="select-page" class="page page-narrow" aria-labelledby="select-title" hidden>
+      <h2 id="select-title" class="section-title" style="text-align:center;margin-bottom:1.5rem">여행 취향을 알려주세요</h2>
+
+      <div class="q-section">
+        <div class="q-title"><span class="q-num">1</span> 선호 관광 방식 <span class="optional">복수 선택 가능</span></div>
+        <div class="chips" id="style-chips">
+          <button class="chip" type="button" data-value="nature">자연/힐링</button>
+          <button class="chip" type="button" data-value="activity">액티비티</button>
+          <button class="chip" type="button" data-value="food">맛집</button>
+          <button class="chip" type="button" data-value="culture">문화·역사</button>
+          <button class="chip" type="button" data-value="shopping">쇼핑</button>
+        </div>
+      </div>
+
+      <div class="q-section">
+        <div class="q-title"><span class="q-num">2</span> 여행 속도</div>
+        <div class="pace">
+          <input type="range" id="pace-slider" min="0" max="2" step="1" value="1" aria-label="여행 속도">
+          <div class="pace-labels" id="pace-labels"><span data-idx="0">느긋하게</span><span data-idx="1" class="active">보통</span><span data-idx="2">빡빡하게</span></div>
+        </div>
+      </div>
+
+      <div class="q-section">
+        <div class="q-title"><span class="q-num">3</span> 동행 유형</div>
+        <div class="chips" id="companion-chips">
+          <button class="chip" type="button" data-value="solo">혼자</button>
+          <button class="chip" type="button" data-value="couple">커플</button>
+          <button class="chip" type="button" data-value="family">가족</button>
+          <button class="chip" type="button" data-value="friends">친구</button>
+          <button class="chip" type="button" data-value="group">단체</button>
+        </div>
+      </div>
+
+      <div class="q-section">
+        <div class="q-title"><span class="q-num">4</span> 지역</div>
+        <input class="input" id="region-input" type="text" placeholder="가고 싶은 지역을 입력해주세요">
+        <p class="muted" style="font-size:.82rem;margin:.5rem 0 0">예: 부산, 여수, 제주 · (지역 자동 매칭은 준비 중입니다)</p>
+      </div>
+
+      <div class="q-section">
+        <div class="q-title"><span class="q-num">5</span> 추가 여행 선호사항 <span class="optional">(선택)</span></div>
+        <textarea class="input" id="extra-input" placeholder="예: 조용한 곳 위주로, 사진 찍기 좋은 장소 선호 등 (선택 입력, 비워두고 넘어가도 됩니다)"></textarea>
+      </div>
+
+      <div class="select-actions">
+        <button class="btn btn-primary btn-block btn-pill" id="to-recommend" type="button" disabled>다음</button>
+      </div>
+    </section>
+
+    <!-- ===== 3Page 여행지 추천 ===== -->
+    <section id="recommend-page" class="page" hidden>
+      <div class="two-col">
+        <div id="recommend-map-slot" class="map-col">
+          <section id="map-panel" class="map-panel" aria-label="대한민국 관광지 지도">
+            <div id="map" role="img" aria-label="선택한 관광지가 표시되는 지도"></div>
+            <div id="map-status">지도를 불러오는 중입니다.</div>
+            <div id="map-api-error" class="api-error" role="alert" hidden></div>
+          </section>
+        </div>
+        <section id="planner-panel" class="panel" aria-live="polite">
+          <div class="panel-head">
+            <h3 id="rec-title">첫 여행지 추천</h3>
+            <span class="step-pill" id="rec-count"></span>
+          </div>
+          <div class="rec-list" id="rec-list"></div>
+          <div class="route-modes" id="route-modes" hidden>
+            <h4>이동 방법</h4>
+            <div class="mode-row">
+              <button class="mode-chip selected" type="button" data-mode="DRIVING"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 16l1.5-5A2 2 0 0 1 8.4 9.5h7.2a2 2 0 0 1 1.9 1.5L19 16"/><rect x="3" y="16" width="18" height="4" rx="1"/><circle cx="7" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg>자동차</button>
+              <button class="mode-chip" type="button" data-mode="TRANSIT"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="14" rx="2"/><path d="M5 11h14M9 17l-2 3M15 17l2 3"/><circle cx="8.5" cy="14" r="1"/><circle cx="15.5" cy="14" r="1"/></svg>대중교통</button>
+              <button class="mode-chip" type="button" data-mode="WALKING"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="1.6"/><path d="M10 22l1.5-6L9 12l1-5 3 2 2 1M11 16l-2 6"/></svg>도보</button>
+            </div>
+            <p id="route-status" role="status">선택한 관광지를 연결한 경로입니다.</p>
+          </div>
+          <div class="selected-list">
+            <h4>내 여행 목록</h4>
+            <ol id="selected"></ol>
+          </div>
+          <div class="actions">
+            <button class="btn btn-secondary" id="restart" type="button">처음부터</button>
+            <button class="btn btn-secondary" id="add-btn" type="button" disabled>이 장소 담기</button>
+            <button class="btn btn-primary" id="finish-btn" type="button" disabled>계획 완료</button>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ===== 4Page 여행지 검토 ===== -->
+    <section id="review-page" class="page" hidden>
+      <div class="two-col">
+        <div id="review-map-slot" class="map-col"></div>
+        <section id="review-panel" class="panel" aria-live="polite">
+          <div class="panel-head"><h3>여행 코스 검토</h3><span class="step-pill">TRAVEL PLAN</span></div>
+          <p id="review-summary" class="review-total"></p>
+          <ol class="timeline" id="timeline"></ol>
+          <div class="actions">
+            <button class="btn btn-secondary" id="edit-plan" type="button">계획 수정</button>
+            <button class="btn btn-primary" id="save-course" type="button">이 코스로 저장</button>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ===== mypage ===== -->
+    <section id="mypage" class="page" hidden>
+      <button class="back-btn" id="mypage-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>돌아가기</button>
+      <div class="profile">
+        <div class="avatar-lg">여</div>
+        <div class="profile-info">
+          <div class="name">여행자님</div>
+          <div class="id">@travelpick_user</div>
+          <div class="phone">010-1234-5678</div>
+        </div>
+        <button class="icon-round" type="button" aria-label="프로필 수정" id="profile-edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+      </div>
+
+      <div class="mp-section">
+        <h3 class="section-title">저장된 여행 코스</h3>
+        <div class="card-grid" id="saved-courses"></div>
+      </div>
+
+      <div class="mp-section">
+        <h3 class="section-title">찜해둔 여행지</h3>
+        <div class="card-grid" id="liked-spots"></div>
+      </div>
+    </section>
+
+    <!-- ===== 저장된 코스 상세 ===== -->
+    <section id="course-page" class="page page-narrow" hidden>
+      <button class="back-btn" id="course-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>저장된 코스로</button>
+      <div class="course-header">
+        <div>
+          <h2 id="course-title" class="section-title" style="margin-bottom:.3rem"></h2>
+          <p id="course-meta" class="muted"></p>
+        </div>
+        <button class="icon-round" id="course-share" type="button" aria-label="공유"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></button>
+      </div>
+      <div id="course-detail"></div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    /* ================= 데이터 (원본 index.html과 동일) ================= */
+    const regions = [
+      { id:'seoul', name:'서울특별시' }, { id:'busan', name:'부산광역시' },
+      { id:'gangwon', name:'강원특별자치도' }, { id:'jeonbuk', name:'전북특별자치도' },
+      { id:'jeonnam', name:'전라남도' }, { id:'jeju', name:'제주특별자치도' }
+    ];
+    const rawSpots = [
+      { area:'seoul', name:'경복궁', region:'서울 종로구', description:'고궁의 고즈넉한 풍경과 북촌 산책', tags:['culture','slow','couple','family'], lat:37.579617, lng:126.977041 },
+      { area:'seoul', name:'남산서울타워', region:'서울 용산구', description:'서울 전경을 한눈에 보는 전망 명소', tags:['nature','slow','couple','friends'], lat:37.551169, lng:126.988227 },
+      { area:'seoul', name:'북촌한옥마을', region:'서울 종로구', description:'전통 한옥과 골목을 걷는 도심 여행', tags:['culture','slow','solo','couple'], lat:37.5826, lng:126.9830 },
+      { area:'gangwon', name:'강릉 안목해변', region:'강원 강릉시', description:'커피거리와 푸른 동해를 한 번에', tags:['food','nature','slow','couple'], lat:37.7717, lng:128.9486 },
+      { area:'gangwon', name:'오죽헌', region:'강원 강릉시', description:'고즈넉한 정원과 강릉의 역사 산책', tags:['culture','slow','family','solo'], lat:37.7783, lng:128.8788 },
+      { area:'gangwon', name:'정동진해변', region:'강원 강릉시', description:'탁 트인 바다와 일출을 즐기는 해변', tags:['nature','slow','couple','friends'], lat:37.6917, lng:129.0329 },
+      { area:'jeonbuk', name:'전주 한옥마을', region:'전북 전주시', description:'한옥 골목과 맛있는 전주 음식', tags:['culture','food','slow','family'], lat:35.8174, lng:127.1530 },
+      { area:'jeonbuk', name:'자만벽화마을', region:'전북 전주시', description:'알록달록한 벽화와 골목 풍경', tags:['culture','activity','balanced','friends'], lat:35.8193, lng:127.1585 },
+      { area:'jeonbuk', name:'덕진공원', region:'전북 전주시', description:'연꽃과 호수가 어우러진 도심 산책', tags:['nature','slow','family','solo'], lat:35.8479, lng:127.1237 },
+      { area:'jeonnam', name:'여수 오동도', region:'전남 여수시', description:'바다 산책로와 섬의 낭만', tags:['nature','slow','couple','family'], lat:34.7467, lng:127.7659 },
+      { area:'jeonnam', name:'향일암', region:'전남 여수시', description:'남해 일출을 만나는 바닷가 사찰', tags:['nature','culture','fast','solo'], lat:34.5935, lng:127.8035 },
+      { area:'jeonnam', name:'여수 해상케이블카', region:'전남 여수시', description:'바다 위에서 즐기는 여수의 파노라마', tags:['activity','nature','balanced','friends'], lat:34.7383, lng:127.7486 },
+      { area:'jeju', name:'제주 성산일출봉', region:'제주 서귀포시', description:'화산 지형 위에서 만나는 멋진 일출', tags:['nature','activity','fast','friends'], lat:33.4581, lng:126.9426 },
+      { area:'jeju', name:'만장굴', region:'제주 제주시', description:'신비로운 용암 동굴을 걷는 여행', tags:['nature','activity','balanced','family'], lat:33.5284, lng:126.7717 },
+      { area:'jeju', name:'협재해수욕장', region:'제주 제주시', description:'에메랄드빛 바다와 노을이 아름다운 해변', tags:['nature','slow','couple','family'], lat:33.3942, lng:126.2396 },
+      { area:'busan', name:'부산 감천문화마을', region:'부산 사하구', description:'알록달록한 골목과 바다 전망', tags:['culture','activity','balanced','friends'], lat:35.0975, lng:129.0106 },
+      { area:'busan', name:'해운대해수욕장', region:'부산 해운대구', description:'넓은 백사장과 부산의 대표 바다', tags:['nature','activity','slow','family'], lat:35.1587, lng:129.1604 },
+      { area:'busan', name:'광안리해수욕장', region:'부산 수영구', description:'광안대교 야경과 해변 카페를 즐기는 곳', tags:['food','nature','slow','couple'], lat:35.1532, lng:129.1187 },
+      { area:'seoul', name:'창덕궁', region:'서울 종로구', description:'후원과 어우러진 조선 왕궁의 아름다움', tags:['culture','slow','family','couple'], lat:37.5794, lng:126.9910 },
+      { area:'seoul', name:'덕수궁', region:'서울 중구', description:'도심 속 궁궐 돌담길과 근대 건축', tags:['culture','slow','solo','couple'], lat:37.5658, lng:126.9751 },
+      { area:'seoul', name:'청계천', region:'서울 종로구', description:'도심을 가로지르는 물길과 야간 산책', tags:['nature','slow','solo','couple'], lat:37.5692, lng:126.9788 },
+      { area:'seoul', name:'광화문광장', region:'서울 종로구', description:'역사와 문화행사가 펼쳐지는 도심 광장', tags:['culture','activity','balanced','family'], lat:37.5759, lng:126.9769 },
+      { area:'seoul', name:'국립중앙박물관', region:'서울 용산구', description:'한국의 역사와 문화를 만나는 박물관', tags:['culture','slow','family','solo'], lat:37.5239, lng:126.9804 },
+      { area:'seoul', name:'서울숲', region:'서울 성동구', description:'산책과 피크닉을 즐기는 도심 생태공원', tags:['nature','slow','family','friends'], lat:37.5443, lng:127.0374 },
+      { area:'seoul', name:'익선동한옥거리', region:'서울 종로구', description:'한옥 골목의 개성 있는 카페와 상점', tags:['food','activity','slow','friends'], lat:37.5735, lng:126.9897 },
+      { area:'gangwon', name:'경포대', region:'강원 강릉시', description:'경포호와 동해를 함께 조망하는 누각', tags:['nature','culture','slow','couple'], lat:37.7956, lng:128.8961 },
+      { area:'gangwon', name:'주문진해변', region:'강원 강릉시', description:'맑은 바다와 항구 먹거리를 즐기는 해변', tags:['food','nature','slow','family'], lat:37.8914, lng:128.8312 },
+      { area:'gangwon', name:'설악산국립공원', region:'강원 속초시', description:'웅장한 산세와 계절별 자연을 만나는 곳', tags:['nature','activity','fast','friends'], lat:38.1195, lng:128.4656 },
+      { area:'gangwon', name:'속초해수욕장', region:'강원 속초시', description:'설악산과 동해를 함께 즐기는 해변', tags:['nature','slow','family','friends'], lat:38.1904, lng:128.6033 },
+      { area:'gangwon', name:'아르떼뮤지엄 강릉', region:'강원 강릉시', description:'빛과 음악으로 즐기는 몰입형 미디어아트', tags:['culture','activity','balanced','friends'], lat:37.7613, lng:128.8936 },
+      { area:'gangwon', name:'하슬라아트월드', region:'강원 강릉시', description:'바다와 조각공원이 어우러진 예술 공간', tags:['culture','nature','balanced','couple'], lat:37.6448, lng:129.0403 },
+      { area:'gangwon', name:'대관령 양떼목장', region:'강원 평창군', description:'초원 산책과 목장 체험을 즐기는 곳', tags:['nature','activity','slow','family'], lat:37.6872, lng:128.7525 },
+      { area:'jeonbuk', name:'경기전', region:'전북 전주시', description:'조선 왕조의 역사와 고즈넉한 전각 산책', tags:['culture','slow','family','solo'], lat:35.8136, lng:127.1480 },
+      { area:'jeonbuk', name:'전동성당', region:'전북 전주시', description:'한옥마을 앞에 자리한 근대 역사 건축물', tags:['culture','slow','couple','solo'], lat:35.8133, lng:127.1490 },
+      { area:'jeonbuk', name:'국립전주박물관', region:'전북 전주시', description:'전북의 역사와 문화를 살펴보는 박물관', tags:['culture','slow','family','solo'], lat:35.8004, lng:127.0907 },
+      { area:'jeonbuk', name:'오성한옥마을', region:'전북 완주군', description:'호수와 한옥이 어우러진 여유로운 마을', tags:['nature','culture','slow','couple'], lat:35.8982, lng:127.2707 },
+      { area:'jeonbuk', name:'내장산국립공원', region:'전북 정읍시', description:'단풍과 계곡으로 유명한 산악 여행지', tags:['nature','activity','fast','friends'], lat:35.5083, lng:126.8893 },
+      { area:'jeonbuk', name:'광한루원', region:'전북 남원시', description:'춘향전의 배경이 된 전통 누원과 정원', tags:['culture','slow','couple','family'], lat:35.4023, lng:127.3793 },
+      { area:'jeonbuk', name:'변산반도국립공원', region:'전북 부안군', description:'채석강과 해안 절경을 만나는 국립공원', tags:['nature','activity','balanced','friends'], lat:35.6235, lng:126.5620 },
+      { area:'jeonnam', name:'여수엑스포해양공원', region:'전남 여수시', description:'바다와 전시·문화시설을 함께 즐기는 곳', tags:['culture','activity','balanced','family'], lat:34.7535, lng:127.7469 },
+      { area:'jeonnam', name:'돌산공원', region:'전남 여수시', description:'여수항과 야경을 내려다보는 전망 공원', tags:['nature','slow','couple','friends'], lat:34.7285, lng:127.7384 },
+      { area:'jeonnam', name:'순천만습지', region:'전남 순천시', description:'갈대밭과 철새를 만나는 생태 여행지', tags:['nature','slow','family','solo'], lat:34.8854, lng:127.5095 },
+      { area:'jeonnam', name:'죽녹원', region:'전남 담양군', description:'대나무 숲길을 걷는 힐링 명소', tags:['nature','slow','family','couple'], lat:35.3217, lng:126.9889 },
+      { area:'jeonnam', name:'목포 갓바위', region:'전남 목포시', description:'바닷가에 솟은 독특한 암석과 산책로', tags:['nature','slow','solo','couple'], lat:34.7905, lng:126.4350 },
+      { area:'jeonnam', name:'보성 녹차밭', region:'전남 보성군', description:'끝없이 펼쳐진 녹차밭의 초록 풍경', tags:['nature','food','slow','family'], lat:34.7182, lng:127.0800 },
+      { area:'jeonnam', name:'담양 메타세쿼이아길', region:'전남 담양군', description:'나무 터널을 걷는 대표 드라이브 명소', tags:['nature','slow','couple','friends'], lat:35.3210, lng:127.0053 },
+      { area:'jeju', name:'한라산국립공원', region:'제주 제주시', description:'제주 중심의 계절별 산악 풍경과 탐방로', tags:['nature','activity','fast','friends'], lat:33.3617, lng:126.5292 },
+      { area:'jeju', name:'우도', region:'제주 제주시', description:'해안 절벽과 초원이 어우러진 섬 여행', tags:['nature','activity','balanced','couple'], lat:33.5043, lng:126.9543 },
+      { area:'jeju', name:'섭지코지', region:'제주 서귀포시', description:'바다 절벽과 초원이 펼쳐진 해안 산책', tags:['nature','slow','couple','family'], lat:33.4306, lng:126.9273 },
+      { area:'jeju', name:'천지연폭포', region:'제주 서귀포시', description:'울창한 숲길 끝에서 만나는 폭포', tags:['nature','slow','family','couple'], lat:33.2450, lng:126.5545 },
+      { area:'jeju', name:'제주돌문화공원', region:'제주 제주시', description:'제주의 돌 문화와 신화를 만나는 공원', tags:['culture','nature','slow','family'], lat:33.4481, lng:126.6540 },
+      { area:'jeju', name:'카멜리아힐', region:'제주 서귀포시', description:'동백과 계절 꽃을 즐기는 정원 여행', tags:['nature','slow','couple','family'], lat:33.2898, lng:126.3682 },
+      { area:'jeju', name:'곽지해수욕장', region:'제주 제주시', description:'맑은 바다와 노을을 즐기는 해변', tags:['nature','slow','family','friends'], lat:33.4518, lng:126.3044 },
+      { area:'busan', name:'자갈치시장', region:'부산 중구', description:'부산의 해산물과 활기찬 시장 풍경', tags:['food','activity','balanced','friends'], lat:35.0967, lng:129.0300 },
+      { area:'busan', name:'태종대', region:'부산 영도구', description:'해안 절벽과 등대가 있는 자연공원', tags:['nature','activity','slow','family'], lat:35.0514, lng:129.0877 },
+      { area:'busan', name:'해동용궁사', region:'부산 기장군', description:'바닷가 절벽에 자리한 사찰과 해안 풍경', tags:['culture','nature','slow','couple'], lat:35.1880, lng:129.2231 },
+      { area:'busan', name:'부산시민공원', region:'부산 부산진구', description:'도심에서 산책과 피크닉을 즐기는 공원', tags:['nature','slow','family','friends'], lat:35.1688, lng:129.0571 },
+      { area:'busan', name:'송도해수욕장', region:'부산 서구', description:'해상케이블카와 바다 산책을 즐기는 해변', tags:['nature','activity','balanced','family'], lat:35.0753, lng:129.0175 },
+      { area:'busan', name:'오륙도 스카이워크', region:'부산 남구', description:'투명 바닥 위에서 즐기는 해안 전망', tags:['nature','activity','fast','friends'], lat:35.1007, lng:129.1235 },
+      { area:'busan', name:'국제시장', region:'부산 중구', description:'부산 먹거리와 오래된 시장 골목 여행', tags:['food','activity','balanced','friends'], lat:35.1028, lng:129.0260 }
+    ];
+    const spotDetails = {
+      '경복궁':{fee:'성인 3,000원',duration:120,hours:'09:00~18:00(계절별 변동)',address:'서울 종로구 사직로 161'},
+      '남산서울타워':{fee:'전망대 성인 약 21,000원',duration:90,hours:'10:30~22:30(변동 가능)',address:'서울 용산구 남산공원길 105'},
+      '북촌한옥마을':{fee:'무료(일부 체험 유료)',duration:90,hours:'상시',address:'서울 종로구 북촌로 일대'},
+      '강릉 안목해변':{fee:'무료',duration:120,hours:'상시',address:'강원 강릉시 창해로 14번길 일대'},
+      '오죽헌':{fee:'성인 3,000원',duration:90,hours:'09:00~18:00',address:'강원 강릉시 율곡로 3139번길 24'},
+      '정동진해변':{fee:'무료',duration:90,hours:'상시',address:'강원 강릉시 강동면 정동진리'},
+      '전주 한옥마을':{fee:'무료(일부 체험 유료)',duration:180,hours:'상시',address:'전북 전주시 완산구 기린대로 99'},
+      '여수 오동도':{fee:'무료(동백열차 유료)',duration:120,hours:'상시',address:'전남 여수시 오동도로 222'},
+      '제주 성산일출봉':{fee:'성인 5,000원',duration:120,hours:'07:00~20:00(변동 가능)',address:'제주 서귀포시 성산읍 일출로 284-12'},
+      '부산 감천문화마을':{fee:'무료',duration:120,hours:'09:00~18:00',address:'부산 사하구 감내2로 203'},
+      '해운대해수욕장':{fee:'무료',duration:120,hours:'상시',address:'부산 해운대구 해운대해변로 264'}
+    };
+    const defaultSpotDetails = { fee:'현장 확인 필요', duration:90, hours:'방문 전 확인', address:'한국관광공사 데이터에서 확인' };
+    const allSpots = rawSpots.map(spot => ({ ...spot, ...defaultSpotDetails, ...spotDetails[spot.name] }));
+    const GOOGLE_MAPS_API_KEY = 'AIzaSyB_OLEFE343UFaBqOKd0-fRsmdCXLFHEEo';
+
+    /* 지역 키워드(임시 데모용 스코프 — 정식 매칭은 추후) */
+    const regionKeywords = {
+      seoul:['서울'], busan:['부산'], gangwon:['강원','강릉','속초','평창','정동진'],
+      jeonbuk:['전북','전주','완주','정읍','남원','부안'], jeonnam:['전남','여수','순천','담양','목포','보성'],
+      jeju:['제주','서귀포']
+    };
+    const tagLabels = { nature:'자연', culture:'문화·역사', food:'맛집', activity:'액티비티', slow:'힐링' };
+    const modeLabel = { DRIVING:'자동차', TRANSIT:'대중교통', WALKING:'도보' };
+
+    /* ================= 상태 ================= */
+    let preferences = { styles:[], pace:'balanced', companion:'', region:'', extra:'' };
+    let spots = [], selected = [], legModes = [], routeSummaries = [], current = null, routeChosen = true, selectedMode = 'DRIVING';
+    let map, markers = [], infoWindow, directionsService, routeRenderers = [], routeRequestId = 0;
+    const liked = new Set();                 // 찜: UI 목업(저장 없음)
+    let currentPageId = 'login-page', mypageReturn = 'select-page';
+    const $ = id => document.getElementById(id);
+
+    /* ================= 아이콘 ================= */
+    const ico = {
+      clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+      pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+      heart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20s-7-4.5-9.2-9C1.3 8 3 4.5 6.3 4.5c2 0 3.2 1.2 4.7 3 1.5-1.8 2.7-3 4.7-3C19 4.5 20.7 8 21.2 11c-2.2 4.5-9.2 9-9.2 9z"/></svg>',
+      heartFill:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20s-7-4.5-9.2-9C1.3 8 3 4.5 6.3 4.5c2 0 3.2 1.2 4.7 3 1.5-1.8 2.7-3 4.7-3C19 4.5 20.7 8 21.2 11c-2.2 4.5-9.2 9-9.2 9z"/></svg>',
+      share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>',
+      car:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 16l1.5-5A2 2 0 0 1 8.4 9.5h7.2a2 2 0 0 1 1.9 1.5L19 16"/><rect x="3" y="16" width="18" height="4" rx="1"/><circle cx="7" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg>',
+      bus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="14" rx="2"/><path d="M5 11h14M9 17l-2 3M15 17l2 3"/></svg>',
+      walk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="1.6"/><path d="M10 22l1.5-6L9 12l1-5 3 2 2 1M11 16l-2 6"/></svg>'
+    };
+    const modeIco = { DRIVING:ico.car, TRANSIT:ico.bus, WALKING:ico.walk };
+
+    /* ================= 공통 유틸 ================= */
+    function showToast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2000); }
+    function fmtDur(min){ const h=Math.floor(min/60), m=min%60; return h ? `${h}시간${m?` ${m}분`:''}` : `${m}분`; }
+    function haversineKm(a,b){ const R=6371,r=x=>x*Math.PI/180; const dLat=r(b.lat-a.lat),dLng=r(b.lng-a.lng);
+      const s=Math.sin(dLat/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(s)); }
+    function estMinutes(km){ return Math.max(5, Math.round(km/50*60)); } // 카드 미리보기용 대략치(약 50km/h 가정), 실제 경로는 Directions API
+    function initialOf(name){ return (name||'?').replace(/^(제주|부산|서울|여수|강릉)\s*/,'').trim().charAt(0) || name.charAt(0); }
+    function themeTags(spot){ return spot.tags.filter(t=>tagLabels[t]).slice(0,3).map(t=>`#${tagLabels[t]}`); }
+
+    function showPage(id){
+      ['login-page','select-page','recommend-page','review-page','mypage','course-page'].forEach(p=>{ $(p).hidden = p!==id; });
+      $('topbar').hidden = (id==='login-page');
+      currentPageId = id;
+      window.scrollTo(0,0);
+    }
+
+    /* ================= 추천 로직 ================= */
+    function resolveArea(text){
+      if(!text) return null;
+      for(const [id,keys] of Object.entries(regionKeywords)){ if(keys.some(k=>text.includes(k))) return id; }
+      return null; // 매칭 실패 시 전국에서 추천(임시)
+    }
+    function recommendationAgent(areaId, pref){
+      const pool = areaId ? allSpots.filter(s=>s.area===areaId) : allSpots.slice();
+      return pool.map(spot => {
+        const styleScore = pref.styles.reduce((n,st)=> n + (spot.tags.includes(st) ? 5 : 0), 0);
+        const paceScore = spot.tags.includes(pref.pace) ? 3 : 0;
+        const compScore = spot.tags.includes(pref.companion) ? 2 : 0;
+        return { ...spot, score: styleScore + paceScore + compScore };
+      }).sort((a,b)=> b.score - a.score).map((spot,i)=> ({ ...spot, rank:i+1 }));
+    }
+
+    /* ================= 1Page 로그인 ================= */
+    $('login-submit').addEventListener('click', () => showPage('select-page'));
+    document.querySelectorAll('.social-btn').forEach(b=> b.addEventListener('click', ()=> showToast('소셜 로그인은 준비 중입니다 (목업)')));
+    $('signup-link').addEventListener('click', e=>{ e.preventDefault(); showToast('회원가입은 준비 중입니다 (목업)'); });
+
+    /* ================= 2Page 여행지 선택 ================= */
+    $('style-chips').addEventListener('click', e=>{ const c=e.target.closest('.chip'); if(!c) return; c.classList.toggle('selected'); validateSelect(); });
+    $('companion-chips').addEventListener('click', e=>{ const c=e.target.closest('.chip'); if(!c) return;
+      $('companion-chips').querySelectorAll('.chip').forEach(x=>x.classList.toggle('selected', x===c)); validateSelect(); });
+    $('pace-slider').addEventListener('input', ()=>{ const v=+$('pace-slider').value;
+      $('pace-labels').querySelectorAll('span').forEach(s=> s.classList.toggle('active', +s.dataset.idx===v)); });
+    $('region-input').addEventListener('input', validateSelect);
+    function validateSelect(){
+      const ok = $('style-chips').querySelectorAll('.chip.selected').length>0
+        && $('companion-chips').querySelector('.chip.selected')
+        && $('region-input').value.trim().length>0;
+      $('to-recommend').disabled = !ok;
+    }
+    $('to-recommend').addEventListener('click', () => {
+      preferences.styles = [...$('style-chips').querySelectorAll('.chip.selected')].map(c=>c.dataset.value);
+      preferences.pace = ['slow','balanced','fast'][+$('pace-slider').value];
+      preferences.companion = $('companion-chips').querySelector('.chip.selected').dataset.value;
+      preferences.region = $('region-input').value.trim();
+      preferences.extra = $('extra-input').value.trim();
+      const area = resolveArea(preferences.region);
+      spots = recommendationAgent(area, preferences).slice(0, 12);
+      selected = []; legModes = []; routeSummaries = []; current = null; routeChosen = true; selectedMode = 'DRIVING';
+      document.querySelectorAll('.mode-chip').forEach(x=> x.classList.toggle('selected', x.dataset.mode==='DRIVING'));
+      showPage('recommend-page');
+      refreshPlanner();
+      loadMap();
+    });
+
+    /* ================= 3Page 추천 (반복형: 5개 추천 → 선택 → 근접도+스타일로 다음 5개) ================= */
+    // 첫 여행지: 스타일 점수 상위 5개 / 이후: 직전 선택지와의 근접도 + 스타일 상위 5개
+    function candidateBatch(){
+      const remaining = spots.filter(s=> !selected.includes(s));
+      if(selected.length === 0) return remaining.slice(0, 5);
+      const last = selected[selected.length - 1];
+      return remaining
+        .map(s=> ({ s, blend: s.score + Math.max(0, 5 - haversineKm(last, s) / 20) }))
+        .sort((a,b)=> b.blend - a.blend)
+        .slice(0, 5)
+        .map(o=> o.s);
+    }
+    function recCardHTML(spot){
+      const cur = spot === current ? ' current' : '';
+      const isLiked = liked.has(spot.name);
+      const badge = selected.length ? '가까운 추천' : '스타일 추천';
+      let timeBadge;
+      if(selected.length){
+        const km = haversineKm(selected[selected.length - 1], spot);
+        timeBadge = `${ico.car} ${km.toFixed(1)}km · 약 ${estMinutes(km)}분`;
+      } else {
+        timeBadge = `${ico.pin} 출발 여행지`;
+      }
+      return `<article class="rec-card${cur}" data-name="${spot.name}">
+        <div class="rec-thumb">
+          <span class="pin">${ico.pin}</span>
+          <span class="initial">${initialOf(spot.name)}</span>
+          <span class="time-badge">${timeBadge}</span>
+        </div>
+        <div class="rec-body">
+          <div class="rec-title">${spot.name} <span class="badge">${badge}</span></div>
+          <div class="rec-desc">${spot.region} · ${spot.description}</div>
+          <div class="tags">${themeTags(spot).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+          <div class="rec-actions">
+            <button class="heart-btn${isLiked?' liked':''}" type="button" data-act="like">${isLiked?ico.heartFill:ico.heart}${isLiked?'찜함':'찜하기'}</button>
+            <button class="detail-btn" type="button" data-act="detail">상세보기</button>
+          </div>
+        </div>
+      </article>`;
+    }
+    function refreshPlanner(){
+      const batch = candidateBatch();
+      $('rec-title').textContent = selected.length ? '다음 여행지 추천' : '첫 여행지 추천';
+      $('rec-count').textContent = `${selected.length}곳 선택`;
+      $('rec-list').innerHTML = batch.length ? batch.map(recCardHTML).join('')
+        : '<p class="rec-empty">더 추천할 여행지가 없어요.<br>계획 완료를 눌러 코스를 확인하세요.</p>';
+      $('selected').innerHTML = selected.map((s,i)=>`<li>${i+1}. ${s.name} <span class="muted">(${s.region})</span></li>`).join('') || '<li>아직 선택한 여행지가 없어요.</li>';
+      updatePlannerUI();
+    }
+    function updatePlannerUI(){
+      $('route-modes').hidden = !current || selected.length === 0;
+      $('add-btn').disabled = !current || (selected.length > 0 && !routeChosen);
+      $('finish-btn').disabled = (!selected.length && !current) || (current && selected.length > 0 && !routeChosen);
+    }
+    $('rec-list').addEventListener('click', e=>{
+      const card = e.target.closest('.rec-card'); if(!card) return;
+      const spot = spots.find(s=> s.name === card.dataset.name); if(!spot) return;
+      const act = e.target.closest('[data-act]')?.dataset.act;
+      if(act === 'like'){ toggleLike(spot); return; }
+      if(act === 'detail'){ showToast(`${spot.name} 상세 정보는 준비 중입니다 (목업)`); return; }
+      current = spot;
+      routeChosen = selected.length === 0;
+      $('route-status').textContent = selected.length ? '이 관광지까지 이동할 방법을 선택하세요.' : '첫 관광지까지의 출발 방법은 경로에 포함하지 않습니다.';
+      refreshPlanner();
+      focusMarker(spot);
+    });
+    function toggleLike(spot){ liked.has(spot.name) ? liked.delete(spot.name) : liked.add(spot.name);
+      showToast(liked.has(spot.name) ? '찜 목록에 담았어요 (목업)' : '찜을 해제했어요 (목업)'); refreshPlanner(); }
+    document.querySelectorAll('.mode-chip').forEach(btn => btn.addEventListener('click', () => {
+      selectedMode = btn.dataset.mode; routeChosen = true;
+      document.querySelectorAll('.mode-chip').forEach(x=> x.classList.toggle('selected', x===btn));
+      $('route-status').textContent = selected.length ? `다음 관광지까지 ${modeLabel[selectedMode]} 이동으로 추가합니다.` : '첫 번째 관광지에는 이동 경로가 필요하지 않습니다.';
+      updatePlannerUI();
+    }));
+    function addCurrent(){
+      if(!current || selected.includes(current) || (selected.length > 0 && !routeChosen)) return;
+      if(selected.length) legModes.push(selectedMode);
+      selected.push(current); current = null; refreshPlanner();
+      if(map) requestRoutes();
+    }
+    $('add-btn').addEventListener('click', addCurrent);
+    $('restart').addEventListener('click', () => {
+      selected = []; legModes = []; routeSummaries = []; current = null; routeChosen = true; clearRoutes(); refreshPlanner(); renderMarkers();
+    });
+    $('finish-btn').addEventListener('click', () => {
+      if(current && selected.length > 0 && !routeChosen) return;
+      addCurrent();
+      if(!selected.length){ showToast('먼저 관광지를 담아주세요.'); return; }
+      $('review-map-slot').appendChild($('map-panel'));
+      showPage('review-page'); renderReview();
+      if(map) requestRoutes();
+    });
+
+    /* ================= 4Page 검토(티켓 타임라인) ================= */
+    function renderReview(){
+      const minutes = selected.reduce((t,s)=> t + (s.duration||0), 0);
+      $('review-summary').innerHTML = `<strong>${selected.length}곳</strong> · 관광 예상 ${fmtDur(minutes)}`;
+      $('timeline').innerHTML = selected.map((spot,i)=>{
+        let html = `<li class="tl-node"><div class="ticket">
+          <div class="ticket-index">${i+1}</div>
+          <div class="thumb-mini">${initialOf(spot.name)}</div>
+          <div><div class="ticket-name">${spot.name}</div>
+            <div class="ticket-sub">${spot.region}</div>
+            <div class="ticket-sub">${ico.clock} 체류 추천 ${fmtDur(spot.duration)} · 입장료 ${spot.fee}</div>
+          </div></div></li>`;
+        if(i < selected.length - 1){
+          const r = routeSummaries[i]; const mode = legModes[i] || 'DRIVING';
+          const info = r?.error ? '경로 계산 실패' : r ? `${Math.ceil(r.duration/60)}분 · ${(r.distance/1000).toFixed(1)}km · ${r.cost}` : '경로 계산 중';
+          html += `<li class="tl-leg"><span class="leg-badge">${modeIco[mode]} ${modeLabel[mode]} · ${info}</span></li>`;
+        }
+        return html;
+      }).join('');
+    }
+    $('edit-plan').addEventListener('click', () => { $('recommend-map-slot').appendChild($('map-panel')); showPage('recommend-page'); refreshPlanner(); });
+    $('save-course').addEventListener('click', () => { showToast('내 코스로 저장했어요 (목업)'); mypageReturn = 'review-page'; renderMypage(); showPage('mypage'); });
+
+    /* ================= mypage(목업) ================= */
+    const dummyCourses = [
+      { name:'서울 고궁 산책', init:'서', spots:['경복궁','창덕궁','북촌한옥마을'] },
+      { name:'제주 자연 일주', init:'제', spots:['제주 성산일출봉','만장굴','협재해수욕장'] },
+      { name:'부산 바다 코스', init:'부', spots:['해운대해수욕장','광안리해수욕장','부산 감천문화마을'] },
+      { name:'전주 한옥 나들이', init:'전', spots:['전주 한옥마을','경기전'] }
+    ];
+    const dummyLiked = ['강릉 안목해변','전주 한옥마을','여수 오동도','담양 메타세쿼이아길'];
+    function courseSpots(c){ return c.spots.map(n=> allSpots.find(s=>s.name===n)).filter(Boolean); }
+    function courseMeta(c){ const list=courseSpots(c); const mins=list.reduce((t,s)=>t+(s.duration||0),0); return `${list.length}곳 · 관광 예상 ${fmtDur(mins)}`; }
+    function renderMypage(){
+      $('saved-courses').innerHTML = dummyCourses.map((c,i)=>`
+        <div class="saved-card" data-course="${i}">
+          <button class="share-btn" type="button" data-share="${c.name}" aria-label="공유">${ico.share}</button>
+          <div class="saved-thumb">${c.init}</div>
+          <div class="saved-body"><div class="saved-name">${c.name}</div><div class="saved-meta">${courseMeta(c)}</div></div>
+        </div>`).join('');
+      $('liked-spots').innerHTML = dummyLiked.map(n=>`
+        <div class="like-card">
+          <div class="lc-left"><span class="lc-thumb">${initialOf(n)}</span>${n}</div>
+          <div class="lc-actions">
+            <button class="liked" type="button" data-unlike="${n}" aria-label="찜 해제">${ico.heartFill}</button>
+            <button type="button" data-share="${n}" aria-label="공유">${ico.share}</button>
+          </div>
+        </div>`).join('');
+    }
+    $('mypage').addEventListener('click', e=>{
+      const share = e.target.closest('[data-share]'); if(share){ showToast('공유 기능은 준비 중입니다 (목업)'); return; }
+      const saved = e.target.closest('.saved-card'); if(saved){ openCourse(+saved.dataset.course); return; }
+      const unlike = e.target.closest('[data-unlike]'); if(unlike){ showToast('찜을 해제했어요 (목업)'); unlike.closest('.like-card').style.opacity=.4; return; }
+    });
+    function openCourse(idx){
+      const c = dummyCourses[idx]; if(!c) return;
+      const list = courseSpots(c);
+      $('course-title').textContent = c.name;
+      $('course-meta').textContent = courseMeta(c);
+      $('course-detail').innerHTML = list.map((s,i)=>`
+        <article class="course-item">
+          <div class="ci-index">${i+1}</div>
+          <div class="ci-thumb">${initialOf(s.name)}</div>
+          <div class="ci-body">
+            <div class="ci-name">${s.name}</div>
+            <div class="ci-region">${s.region}</div>
+            <p class="ci-desc">${s.description}</p>
+            <div class="ci-meta"><span>${ico.clock} 체류 추천 ${fmtDur(s.duration)}</span><span>입장료 ${s.fee}</span><span>운영 ${s.hours}</span></div>
+            <div class="ci-addr">${ico.pin} ${s.address}</div>
+          </div>
+        </article>`).join('');
+      showPage('course-page');
+    }
+    $('topbar-avatar').addEventListener('click', ()=>{ if(currentPageId!=='mypage'){ mypageReturn=currentPageId; renderMypage(); showPage('mypage'); } });
+    $('mypage-back').addEventListener('click', ()=> showPage(mypageReturn));
+    $('course-back').addEventListener('click', ()=> showPage('mypage'));
+    $('course-share').addEventListener('click', ()=> showToast('공유 기능은 준비 중입니다 (목업)'));
+    $('profile-edit').addEventListener('click', ()=> showToast('프로필 수정은 준비 중입니다 (목업)'));
+
+    /* ================= 지도/경로 (원본 로직 유지) ================= */
+    function showApiError(message){ $('map-api-error').textContent = `지도 API 오류: ${message}`; $('map-api-error').hidden=false; $('map-status').hidden=Boolean(map); if(!map) $('map-status').textContent='지도를 사용할 수 없습니다. 아래 오류를 확인해주세요.'; }
+    function clearApiError(){ $('map-api-error').hidden = true; }
+    window.gm_authFailure = () => showApiError('API 키 인증에 실패했습니다. 키 유효성·결제 계정·Maps JavaScript API 활성화·HTTP referrer 제한을 확인해주세요.');
+    function syncMarkers(){ markers.forEach(({marker})=> marker.setMap(null));
+      markers = spots.map(spot => ({ marker:new google.maps.Marker({ map, position:{lat:spot.lat,lng:spot.lng}, title:spot.name }), spot })); }
+    function renderMarkers(){ if(!map) return; markers.forEach(({marker,spot})=> marker.setZIndex(selected.includes(spot)?2:1)); }
+    function focusMarker(spot){ if(!map) return; const m = markers.find(x=>x.spot===spot)?.marker; if(m){ map.panTo(m.getPosition()); infoWindow.setContent(`<div style="padding:6px 10px;font-size:13px"><strong>${spot.name}</strong><br>${spot.region}</div>`); infoWindow.open(map,m); } }
+    function clearRoutes(){ routeRequestId += 1; routeRenderers.forEach(r=> r.setMap(null)); routeRenderers = []; }
+    function estimateRouteCost(mode, meters, route){
+      if(mode==='WALKING') return '무료';
+      if(mode==='TRANSIT' && route.fare) return `약 ${route.fare.value.toLocaleString()}원`;
+      if(mode==='TRANSIT') return '요금 확인 필요';
+      return `약 ${(Math.round(meters/1000*180/100)*100).toLocaleString()}원`;
+    }
+    function requestRoutes(){
+      if(!directionsService || selected.length < 2) return;
+      clearRoutes(); clearApiError();
+      const requestId = ++routeRequestId;
+      routeSummaries = selected.slice(1).map(()=> null);
+      selected.slice(0,-1).forEach((from,index)=>{
+        const to = selected[index+1]; const mode = legModes[index] || 'DRIVING';
+        const request = { origin:{lat:from.lat,lng:from.lng}, destination:{lat:to.lat,lng:to.lng}, travelMode:google.maps.TravelMode[mode] };
+        if(mode==='TRANSIT') request.transitOptions = { departureTime:new Date(Date.now()+3600000) };
+        directionsService.route(request, (result,status)=>{
+          if(requestId !== routeRequestId) return;
+          if(status !== 'OK'){
+            routeSummaries[index] = { error:true };
+            const msg = { ZERO_RESULTS:'경로가 없습니다.', REQUEST_DENIED:'경로 API가 거부되었습니다. Directions API 활성화·키 제한을 확인해주세요.', OVER_QUERY_LIMIT:'경로 API 사용량 한도를 초과했습니다.', INVALID_REQUEST:'경로 요청이 올바르지 않습니다.' }[status] || `경로 API 응답 오류(${status})`;
+            showApiError(msg); if(!$('review-page').hidden) renderReview(); return;
+          }
+          const renderer = new google.maps.DirectionsRenderer({ map, suppressMarkers:true, preserveViewport:index>0, polylineOptions:{ strokeColor:'#3b82f6', strokeWeight:5, strokeOpacity:.85 } });
+          renderer.setDirections(result); routeRenderers.push(renderer);
+          const route = result.routes[0];
+          const meters = route.legs.reduce((t,l)=> t+(l.distance?.value||0), 0);
+          routeSummaries[index] = { duration:route.legs.reduce((t,l)=> t+(l.duration?.value||0),0), distance:meters, cost:estimateRouteCost(mode,meters,route) };
+          if(!$('review-page').hidden) renderReview();
+        });
+      });
+    }
+    function initMap(){
+      try{
+        map = new google.maps.Map($('map'), { center:{lat:36.35,lng:127.8}, zoom:12, mapTypeControl:false, streetViewControl:false, fullscreenControl:false });
+        infoWindow = new google.maps.InfoWindow();
+        directionsService = new google.maps.DirectionsService();
+        syncMarkers();
+        if(spots.length){ const b = new google.maps.LatLngBounds(); spots.forEach(s=> b.extend({lat:s.lat,lng:s.lng})); map.fitBounds(b,60); }
+        clearApiError(); $('map-status').hidden = true; renderMarkers();
+        if(selected.length >= 2) requestRoutes();
+      }catch(e){ showApiError('지도를 초기화하지 못했습니다. Maps JavaScript API 활성화와 콘솔 오류를 확인해주세요.'); }
+    }
+    function loadMap(){
+      if(map){ syncMarkers(); if(spots.length){ const b=new google.maps.LatLngBounds(); spots.forEach(s=>b.extend({lat:s.lat,lng:s.lng})); map.fitBounds(b,60);} renderMarkers(); return; }
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&loading=async&callback=initMap&language=ko&region=KR`;
+      script.onerror = () => showApiError('Google Maps JavaScript API를 불러오지 못했습니다. 네트워크·API 키·결제 계정·referrer 제한을 확인해주세요.');
+      document.head.appendChild(script);
+    }
+    window.initMap = initMap;
+
+    /* 시작: 로그인 페이지 */
+    showPage('login-page');
+  </script>
+</body>
+</html>

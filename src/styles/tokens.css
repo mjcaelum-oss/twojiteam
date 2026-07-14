@@ -1,1 +1,34 @@
-:root { --ink: #172033; --muted: #68748a; --line: #dbe3ef; --brand: #2563eb; --brand-dark: #1746b0; --soft: #f5f8fd; --shadow: 0 12px 30px #1720330b; --radius-md: 15px; --radius-xl: 22px; --content-width: 1100px; --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem; --space-6: 1.5rem; --space-10: 2.5rem; --breakpoint-mobile: 760px; }
+/* 디자인 토큰 — indexver2/layout.md의 새 디자인 시스템(화이트+블루, rounded, 넉넉한 여백) */
+:root {
+  /* 컬러 */
+  --ink: #1a1a1a;          /* Text Primary */
+  --muted: #6b7280;        /* Text Secondary */
+  --line: #e5e7eb;         /* Border / Divider */
+  --brand: #3b82f6;        /* Primary Accent (Blue) */
+  --brand-strong: #2f6fed; /* 강조 블루 */
+  --brand-dark: #1746b0;   /* hover 블루 */
+  --soft: #ffffff;         /* Background */
+  --surface: #f9fafb;      /* Surface / Card BG */
+  --blue-soft: #eff4ff;    /* 연블루(아이콘/선택 배경) */
+  --pin: #ef5b68;          /* 핀 */
+
+  /* 그림자 / 모서리 */
+  --shadow: 0 4px 12px rgba(0, 0, 0, .05);
+  --shadow-lg: 0 10px 30px rgba(23, 32, 51, .08);
+  --radius-md: 12px;
+  --radius-xl: 16px;
+
+  /* 레이아웃 / 타이포 */
+  --content-width: 1100px;
+  --font: 'Pretendard', 'Inter', 'Noto Sans KR', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* 간격 스케일 */
+  --space-1: .25rem;
+  --space-2: .5rem;
+  --space-3: .75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-10: 2.5rem;
+
+  --breakpoint-mobile: 760px;
+}
