@@ -1,4 +1,7 @@
-.card { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; box-shadow: var(--shadow); transition: .15s; }
+.card { position: relative; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; box-shadow: var(--shadow); transition: .15s; }
+.heart { position: absolute; left: 10px; top: 10px; z-index: 2; width: 34px; height: 34px; border-radius: 999px; border: none; background: #fff; color: var(--muted); display: grid; place-items: center; box-shadow: var(--shadow); cursor: pointer; }
+.heart svg { width: 18px; height: 18px; display: block; }
+.hearted { color: var(--pin); }
 .card:hover { border-color: var(--brand); }
 .selected { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(59, 130, 246, .18); }
 .body { display: block; width: 100%; text-align: left; border: 0; background: transparent; padding: 0; cursor: pointer; color: inherit; }

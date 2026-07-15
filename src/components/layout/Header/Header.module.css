@@ -16,6 +16,8 @@
   gap: .5rem;
   font-weight: 800;
   letter-spacing: .02em;
+  color: var(--ink);
+  text-decoration: none;
 }
 .dot {
   width: 22px;
@@ -37,4 +39,7 @@
   font-weight: 800;
   display: grid;
   place-items: center;
+  text-decoration: none;
+  transition: .15s;
 }
+.avatar:hover { border-color: var(--brand); }
