@@ -13,19 +13,17 @@ import { useTravelPlan } from '../../app/providers/TravelPlanProvider';
 import styles from './RecommendationPage.module.css';
 
 export function RecommendationPage() {
-  const navigate = useNavigate(); const { plan, addSpot } = useTravelPlan(); const [candidates, setCandidates] = useState<ScoredSpot[]>([]); const [rejected, setRejected] = useState<string[]>([]); const [current, setCurrent] = useState<ScoredSpot | undefined>(); const [error, setError] = useState(''); const [loading, setLoading] = useState(false);
-  useEffect(() => { if (!plan) { navigate('/'); return; } let active = true; setLoading(true); setError(''); void getSpots(plan.destination).then(async (spots) => { const response = await requestOpenAIRecommendations({ destination: plan.destination, preferences: plan.preferences, spots, selectedIds: plan.spots.map((item) => item.spot.id), rejectedIds: rejected, previousSpotId: plan.spots.at(-1)?.spot.id }); if (active) setCandidates(openAIRecommendationsToSpots(response, spots)); }).catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : 'OpenAI 추천에 실패했습니다.'); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [navigate, plan, rejected]);
-  const choose = (spot: ScoredSpot) => { setCurrent(spot); };
-  const reject = (spot: ScoredSpot) => { setRejected((ids) => [...ids, spot.id]); if (current?.id === spot.id) setCurrent(undefined); };
+  const navigate = useNavigate(); const { plan, addSpot } = useTravelPlan(); const [candidates, setCandidates] = useState<ScoredSpot[]>([]); const [error, setError] = useState(''); const [loading, setLoading] = useState(false);
+  useEffect(() => { if (!plan) { navigate('/'); return; } let active = true; setLoading(true); setError(''); void getSpots(plan.destination).then(async (spots) => { const response = await requestOpenAIRecommendations({ destination: plan.destination, preferences: plan.preferences, spots, selectedIds: plan.spots.map((item) => item.spot.id), rejectedIds: [], previousSpotId: plan.spots.at(-1)?.spot.id }); if (active) setCandidates(openAIRecommendationsToSpots(response, spots)); }).catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : 'OpenAI 추천에 실패했습니다.'); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [navigate, plan]);
+  const choose = (spot: ScoredSpot) => addSpot(spot);
   if (!plan) return null;
-  const finish = () => { if (current) addSpot(current); navigate('/review'); };
   return (
     <>
       <Header />
       <PageContainer className={styles.page}>
         <div className={styles.layout}>
           <div className={styles.mapCol}>
-            <TravelMap spots={candidates} selected={plan.spots.map((item) => item.spot)} current={current} onError={setError} />
+            <TravelMap spots={candidates} selected={plan.spots.map((item) => item.spot)} onError={setError} />
           </div>
           <section className={styles.panel} aria-live="polite">
             <div className="progress">{plan.spots.length + 1}번째 추천</div>
@@ -34,12 +32,11 @@ export function RecommendationPage() {
             {error && <ErrorMessage message={error} />}
             {loading ? <div className="loading">관광지 후보를 찾고 추천하는 중입니다.</div> : (
               <div className={styles.cards}>
-                {candidates.length ? candidates.map((spot) => <RecommendationCard key={spot.id} spot={spot} selected={current?.id === spot.id} onSelect={() => choose(spot)} onReject={() => reject(spot)} />) : <div className="complete">추천 후보가 없습니다. API 설정과 검색 반경을 확인하세요.</div>}
+                {candidates.length ? candidates.map((spot) => <RecommendationCard key={spot.id} spot={spot} onSelect={() => choose(spot)} />) : <div className="complete">추천 후보가 없습니다. API 설정과 검색 반경을 확인하세요.</div>}
               </div>
             )}
             <div className={styles.actions}>
               <Button variant="secondary" type="button" onClick={() => navigate('/')}>처음부터</Button>
-              <Button type="button" disabled={!current} onClick={finish}>이 장소 선택</Button>
               <Button variant="secondary" type="button" disabled={!plan.spots.length} onClick={() => navigate('/review')}>계획 검토</Button>
             </div>
             <div className={styles.selected}>
