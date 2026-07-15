@@ -25,7 +25,7 @@ export function ReviewPage() {
       <PageContainer className={styles.page}>
         <div className={styles.layout}>
           <div className={styles.mapCol}>
-            <TravelMap spots={plan.spots.map((item) => item.spot)} selected={plan.spots.map((item) => item.spot)} />
+            <TravelMap spots={[]} selected={plan.spots.map((item) => item.spot)} routes={plan.spots.slice(0, -1).map((item, index) => ({ origin: item.spot, destination: plan.spots[index + 1].spot, mode: plan.spots[index + 1].transportMode ?? 'DRIVING' }))} />
           </div>
           <section className={styles.panel}>
             <div className="progress">TRAVEL PLAN</div>

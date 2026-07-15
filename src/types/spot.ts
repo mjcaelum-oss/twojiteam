@@ -9,6 +9,7 @@ export interface OpeningHours {
 export interface Spot {
   id: string;
   name: string;
+  address?: string;
   region: string;
   latitude: number;
   longitude: number;

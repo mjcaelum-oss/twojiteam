@@ -17,6 +17,6 @@ export async function searchTouristSpots(destination: Destination, radius = 1000
     if (!place.id || !place.displayName || !place.location) return [];
 
     const category = categoryFor(place.types);
-    return [{ id: `place:${place.id}`, name: place.displayName, region: place.formattedAddress ?? destination.name, latitude: place.location.lat(), longitude: place.location.lng(), category, tags: [category, 'balanced'], description: `${destination.name}에서 찾은 Google Places 관광지`, photoUrl: place.photos?.[0]?.getURI({ maxWidth: 800, maxHeight: 500 }), feeAmount: 0, feeNote: '현장 확인 필요', durationMinutes: 90, openingHours: { weekly: {} }, popularity: Math.min(1, (place.rating ?? 0) / 5), source: 'places', sourceUrl: place.googleMapsURI, lastVerifiedAt: new Date().toISOString() }];
+    return [{ id: `place:${place.id}`, name: place.displayName, address: place.formattedAddress ?? destination.name, region: place.formattedAddress ?? destination.name, latitude: place.location.lat(), longitude: place.location.lng(), category, tags: [category, 'balanced'], description: `${destination.name}에서 찾은 Google Places 관광지`, photoUrl: place.photos?.[0]?.getURI({ maxWidth: 800, maxHeight: 500 }), feeAmount: 0, feeNote: '현장 확인 필요', durationMinutes: 90, openingHours: { weekly: {} }, popularity: Math.min(1, (place.rating ?? 0) / 5), source: 'places', sourceUrl: place.googleMapsURI, lastVerifiedAt: new Date().toISOString() }];
   });
 }

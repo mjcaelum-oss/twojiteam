@@ -1,19 +1,29 @@
 declare namespace google.maps {
   interface LatLngLiteral { lat: number; lng: number }
   interface LatLng { lat(): number; lng(): number }
-  class Map { constructor(element: HTMLElement, options?: { center?: LatLngLiteral; zoom?: number }); setCenter(center: LatLngLiteral): void; panTo(center: LatLngLiteral): void; }
-  class Marker { constructor(options: { map: Map; position: LatLngLiteral; title?: string }); setMap(map: Map | null): void; setZIndex(index: number): void; }
+  class Map { constructor(element: HTMLElement, options?: { center?: LatLngLiteral; zoom?: number }); setCenter(center: LatLngLiteral): void; panTo(center: LatLngLiteral): void; fitBounds(bounds: LatLngBounds): void; }
+  class LatLngBounds { constructor(); extend(point: unknown): void; }
+  class Marker { constructor(options: { map: Map; position: LatLngLiteral; title?: string; icon?: { path: string; fillColor: string; fillOpacity: number; strokeColor: string; strokeWeight: number; scale: number } }); setMap(map: Map | null): void; setZIndex(index: number): void; }
   class InfoWindow { constructor(); setContent(content: string): void; open(map: Map, marker: Marker): void; }
-  class DirectionsService { route(request: Record<string, unknown>, callback: (result: DirectionsResult | null, status: string) => void): void; }
+  class Polyline { constructor(options?: { map?: Map; path?: unknown[]; geodesic?: boolean; strokeColor?: string; strokeOpacity?: number; strokeWeight?: number }); setMap(map: Map | null): void; }
+  interface DirectionsRequest { origin: string | LatLngLiteral; destination: string | LatLngLiteral; travelMode: string; transitOptions?: { departureTime: Date }; }
+  interface DirectionsLeg { distance?: { value?: number }; duration?: { value?: number }; }
+  interface DirectionsRoute { legs: DirectionsLeg[]; fare?: { value?: number }; }
+  interface DirectionsResult { routes: DirectionsRoute[]; }
+  class DirectionsService { route(request: DirectionsRequest): Promise<DirectionsResult>; }
   class DirectionsRenderer { constructor(options?: { map?: Map; suppressMarkers?: boolean; preserveViewport?: boolean }); setDirections(result: DirectionsResult): void; setMap(map: Map | null): void; }
-  interface DirectionsResult { routes: Array<{ legs: Array<{ distance?: { value?: number }; duration?: { value?: number } }>; fare?: { value?: number } }> }
   const TravelMode: Record<string, string>;
   function importLibrary(name: string): Promise<Record<string, unknown>>;
+}
+declare namespace google.maps.routes {
+  interface ComputeRoutesRequest { origin: google.maps.LatLngLiteral | google.maps.places.Place; destination: google.maps.LatLngLiteral | google.maps.places.Place; travelMode: string; fields: string[]; departureTime?: Date; }
+  interface RouteData { distanceMeters?: number; durationMillis?: number; path?: unknown[]; travelAdvisory?: { transitFare?: { units?: string; nanos?: number } }; createPolylines(): google.maps.Polyline[]; }
+  class Route { static computeRoutes(request: ComputeRoutesRequest): Promise<{ routes?: RouteData[] }>; }
 }
 declare namespace google.maps.places {
   interface PlacePhoto { getURI(options?: { maxWidth?: number; maxHeight?: number }): string; }
   interface PlaceData { id?: string; displayName?: string; location?: google.maps.LatLng; formattedAddress?: string; googleMapsURI?: string; types?: string[]; photos?: PlacePhoto[]; rating?: number; userRatingCount?: number; }
-  class Place { static searchNearby(request: Record<string, unknown>): Promise<{ places?: PlaceData[] }>; }
+  class Place { constructor(options?: { id?: string }); static searchNearby(request: Record<string, unknown>): Promise<{ places?: PlaceData[] }>; }
 }
 interface Window { initTravelPickMap?: () => void; gm_authFailure?: () => void; }
 interface Window { google?: typeof google; }

@@ -1,5 +1,6 @@
 import type { ScoredSpot } from '../recommendation.types';
 import styles from './RecommendationCard.module.css';
+import { getSpotColor } from '../../map/spotColors';
 
 const clockIcon = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>;
 const carIcon = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M5 16l1.5-5A2 2 0 0 1 8.4 9.5h7.2a2 2 0 0 1 1.9 1.5L19 16" /><rect x="3" y="16" width="18" height="4" rx="1" /><circle cx="7" cy="20" r="1" /><circle cx="17" cy="20" r="1" /></svg>;
@@ -27,6 +28,7 @@ export function RecommendationCard({ spot, selected, liked = false, onSelect, on
         </div>
         <div className={styles.info}>
           <div className={styles.titleRow}>{spot.name}</div>
+          <span className={styles.mapColor} style={{ backgroundColor: getSpotColor(spot.id).value }}>지도 {getSpotColor(spot.id).name}</span>
           <p className={styles.desc}>{spot.region} · {spot.description}</p>
           {spot.tags.length > 0 && <div className={styles.tags}>{spot.tags.slice(0, 3).map((tag) => <span key={tag} className={styles.tag}>#{tag}</span>)}</div>}
           {spot.reason && <p className={styles.reason}>{spot.reason}</p>}

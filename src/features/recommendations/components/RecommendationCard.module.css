@@ -10,6 +10,7 @@
 .badge svg { width: 14px; height: 14px; display: block; }
 .info { padding: .85rem 1rem 0; }
 .titleRow { display: flex; align-items: center; gap: .4rem; font-weight: 800; font-size: 1.02rem; }
+.mapColor { display: inline-block; margin-top: .35rem; padding: .12rem .45rem; border-radius: 999px; color: #fff; font-size: .7rem; font-weight: 700; }
 .desc { color: var(--muted); font-size: .88rem; margin: .25rem 0 .5rem; }
 .tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .5rem; }
 .tag { font-size: .76rem; color: var(--brand-strong); background: var(--blue-soft); border-radius: 6px; padding: .12rem .45rem; font-weight: 600; }
