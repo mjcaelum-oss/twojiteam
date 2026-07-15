@@ -3,6 +3,7 @@ import type { Spot } from '../../../types/spot';
 import type { TransportMode } from '../../../types/travelPlan';
 import { loadGoogleMaps } from '../googleMaps.loader';
 import { clearMarkers, createMarkers, type SpotMarker } from '../marker.service';
+import { fitMapToSpots } from '../mapViewport.service';
 import styles from './TravelMap.module.css';
 
 interface MapRoute { origin: Spot; destination: Spot; mode: TransportMode; result?: google.maps.DirectionsResult; }

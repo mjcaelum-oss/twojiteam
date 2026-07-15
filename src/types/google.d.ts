@@ -1,5 +1,6 @@
 declare namespace google.maps {
   interface LatLngLiteral { lat: number; lng: number }
+  interface LatLngBoundsLiteral { north: number; south: number; east: number; west: number }
   interface LatLng { lat(): number; lng(): number }
   class Map { constructor(element: HTMLElement, options?: { center?: LatLngLiteral; zoom?: number }); setCenter(center: LatLngLiteral): void; panTo(center: LatLngLiteral): void; fitBounds(bounds: LatLngBounds): void; }
   class LatLngBounds { constructor(); extend(point: unknown): void; }
