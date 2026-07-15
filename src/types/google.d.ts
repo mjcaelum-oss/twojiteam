@@ -12,7 +12,7 @@ declare namespace google.maps {
   interface DirectionsRoute { legs: DirectionsLeg[]; fare?: { value?: number }; }
   interface DirectionsResult { routes: DirectionsRoute[]; }
   class DirectionsService { route(request: DirectionsRequest): Promise<DirectionsResult>; }
-  class DirectionsRenderer { constructor(options?: { map?: Map; suppressMarkers?: boolean; preserveViewport?: boolean }); setDirections(result: DirectionsResult): void; setMap(map: Map | null): void; }
+  class DirectionsRenderer { constructor(options?: { map?: Map; suppressMarkers?: boolean; preserveViewport?: boolean; polylineOptions?: { strokeColor?: string; strokeOpacity?: number; strokeWeight?: number } }); setDirections(result: DirectionsResult): void; setMap(map: Map | null): void; }
   const TravelMode: Record<string, string>;
   function importLibrary(name: string): Promise<Record<string, unknown>>;
 }
