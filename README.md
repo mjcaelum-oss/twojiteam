@@ -40,7 +40,9 @@ npm run dev
 
 `supabase/migrations/20260714000000_initial_schema.sql`은 `spots`, `travel_plans`, `travel_plan_spots`와 소유자 기준 RLS 정책을 만들고, `supabase/seed.sql`은 개발용 관광지 3곳을 넣습니다.
 
-Supabase CLI가 설치되어 있다면 프로젝트 연결 후 migration과 seed를 적용합니다. `20260714010000_clear_registered_spots.sql`은 기존 관광지 레코드를 삭제하며, 새 관광지는 Google Places에서 실시간으로 수집합니다. 인증을 연결하지 않은 현재 화면에서는 localStorage 저장을 기본으로 유지합니다. Supabase 저장을 실제 사용하려면 Anonymous Sign-In 또는 별도 인증 흐름을 먼저 켜야 합니다.
+Supabase CLI가 설치되어 있다면 프로젝트 연결 후 migration과 seed를 적용합니다. `20260714010000_clear_registered_spots.sql`은 기존 관광지 레코드를 삭제하며, 새 관광지는 Google Places에서 실시간으로 수집합니다. `20260715010000_mvp_users.sql`은 해커톤용 `mvp_users` 테이블과 회원가입/로그인 RPC를 만듭니다. 이메일과 전화번호는 계정 정보로만 저장하며 Supabase Auth, 확인 메일, SMS 인증을 사용하지 않습니다. 비밀번호는 `pgcrypto`의 bcrypt 해시만 저장되고 브라우저에서 사용자 테이블을 직접 읽을 수 없습니다.
+
+로그인 성공 정보는 브라우저 localStorage에 보관하므로 이 로그인은 MVP 화면 접근용입니다. 운영 서비스의 API 권한 확인이나 민감한 데이터 보호용 세션으로 사용해서는 안 됩니다. Supabase Dashboard에서는 Email 로그인 제공자를 꺼둬도 이 MVP 로그인에 영향이 없습니다. `VITE_DATA_MODE=mock`인 동안 여행 계획 저장은 localStorage를 사용합니다.
 
 ## 폴더 안내
 
@@ -51,7 +53,7 @@ Supabase CLI가 설치되어 있다면 프로젝트 연결 후 migration과 seed
 
 ## 현재 구현과 남은 작업
 
-구현된 범위는 검색 조건(지역, 취향, 날짜, 시각, 인원), Google Places Nearby Search 후보 수집·도메인 변환, OpenAI 추천 client, 지도 로더/마커 fallback, 계획 선택·삭제·순서 변경·이동수단 선택, 시간 경고, 비용/시간 요약, localStorage repository, Supabase client/repository 인터페이스입니다.
+구현된 범위는 검색 조건(지역, 취향, 날짜, 시각, 인원), Google Places Nearby Search 후보 수집·도메인 변환, OpenAI 추천 client, 지도 로더/마커 fallback, 계획 선택·삭제·순서 변경·이동수단 선택, 시간 경고, 비용/시간 요약, localStorage repository, Supabase client/repository 인터페이스, 인증 메일 없는 해커톤용 사용자 로그인을 포함합니다.
 
 OpenAI 호출은 `api/recommendations.js`에서 직접 처리합니다. 별도의 recommendation agent 서버는 사용하지 않습니다. 로컬에서는 Vite 개발 미들웨어가 같은 핸들러를 사용하고, 배포에서는 Vercel Function으로 동작합니다. 프론트는 기본적으로 `/api/recommendations`에 POST합니다.
 

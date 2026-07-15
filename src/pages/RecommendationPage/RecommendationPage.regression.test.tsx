@@ -53,17 +53,16 @@ describe('recommendation merge regression', () => {
     vi.clearAllMocks();
   });
 
-  it('다음 후보 버튼이 있는 추천 카드를 정상적으로 렌더링한다', () => {
+  it('추천 카드에는 개별 후보 제외 버튼이 없다', () => {
     const html = renderToStaticMarkup(
       <RecommendationCard
         spot={spot('first', '첫 번째')}
         selected={false}
         onSelect={vi.fn()}
-        onReject={vi.fn()}
       />,
     );
 
-    expect(html).toContain('다음 후보로');
+    expect(html).not.toContain('다음 후보로');
   });
 
   it('선택한 두 장소 사이의 이동수단 선택 단계를 렌더링한다', () => {

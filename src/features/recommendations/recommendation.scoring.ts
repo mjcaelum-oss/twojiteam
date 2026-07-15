@@ -14,7 +14,7 @@ export function scoreSpot(spot: Spot, context: RecommendationContext): ScoredSpo
   const anchor = context.previous ?? context.destination;
   const km = distanceKm(anchor, spot);
   const estimatedMinutes = km * 3 + 5;
-  const style = spot.tags.includes(context.preferences.style) ? 5 : 0;
+  const style = spot.category === context.preferences.style || spot.tags.includes(context.preferences.style) ? 8 : 0;
   const companion = spot.tags.includes(context.preferences.companion) ? 2 : 0;
   const popularity = spot.popularity * 2;
   const distancePenalty = Math.min(1, estimatedMinutes / maxLegMinutes[context.preferences.pace]) * 6;
@@ -23,8 +23,8 @@ export function scoreSpot(spot: Spot, context: RecommendationContext): ScoredSpo
   return { ...spot, score, reason, distanceKm: km };
 }
 
-export function getRecommendations(spots: Spot[], context: RecommendationContext, limit = 3): ScoredSpot[] {
-  return spots.filter((spot) => !context.selectedIds.includes(spot.id) && !context.rejectedIds.includes(spot.id))
+export function getRecommendations(spots: Spot[], context: RecommendationContext, limit = 5): ScoredSpot[] {
+  return spots.filter((spot) => !context.selectedIds.includes(spot.id) && !context.rejectedIds.includes(spot.id) && !(context.previous?.venueType === 'restaurant' && spot.venueType === 'restaurant'))
     .map((spot) => scoreSpot(spot, context)).filter((spot) => spot.score > -4)
     .sort((a, b) => b.score - a.score).slice(0, limit);
 }

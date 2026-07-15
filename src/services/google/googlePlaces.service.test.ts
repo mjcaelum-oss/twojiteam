@@ -24,6 +24,7 @@ describe('searchTouristSpots', () => {
           types: ['historical_landmark'],
           photos: [{ getURI: () => 'https://images.example/palace.jpg' }],
           rating: 4.8,
+          priceRange: { startPrice: { currencyCode: 'KRW', units: 3000 } },
         },
       ],
     });
@@ -41,7 +42,7 @@ describe('searchTouristSpots', () => {
     vi.unstubAllGlobals();
   });
 
-  it('현재 Places API 응답을 관광지 후보로 변환하고 최대 10개만 요청한다', async () => {
+  it('현재 Places API 응답을 관광지 후보로 변환하고 최대 20개를 요청한다', async () => {
     const spots = await searchTouristSpots({
       name: '서울',
       latitude: 37.5665,
@@ -49,7 +50,7 @@ describe('searchTouristSpots', () => {
     });
 
     expect(searchNearby).toHaveBeenCalledWith(expect.objectContaining({
-      maxResultCount: 10,
+      maxResultCount: 20,
     }));
     expect(spots).toHaveLength(1);
     expect(spots[0]).toMatchObject({
@@ -60,6 +61,8 @@ describe('searchTouristSpots', () => {
       category: 'culture',
       photoUrl: 'https://images.example/palace.jpg',
       source: 'places',
+      durationMinutes: 120,
+      feeAmount: 3000,
     });
   });
 });

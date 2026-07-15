@@ -14,11 +14,13 @@ export interface Spot {
   latitude: number;
   longitude: number;
   category: TravelStyle;
+  venueType?: 'restaurant' | 'cafe' | 'bakery';
   tags: string[];
   description: string;
   photoUrl?: string;
   feeAmount: number;
   feeNote: string;
+  feeCurrency?: string;
   durationMinutes: number;
   openingHours: OpeningHours;
   popularity: number;

@@ -11,10 +11,13 @@
 .badge svg { width: 14px; height: 14px; display: block; }
 .info { padding: 1rem 1.1rem 1.15rem; }
 .titleRow { display: flex; align-items: center; gap: .4rem; font-weight: 800; font-size: 1.05rem; }
+.categoryIcon { display: inline-flex; align-items: center; color: var(--brand); }
+.categoryIcon svg { width: 18px; height: 18px; }
 .region { color: var(--muted); font-size: .82rem; margin-top: .15rem; }
 .tags { display: flex; flex-wrap: wrap; gap: .35rem; margin: .6rem 0 .55rem; }
 .tag { font-size: .76rem; color: var(--brand-strong); background: var(--blue-soft); border-radius: 6px; padding: .14rem .5rem; font-weight: 600; }
 .desc { color: var(--muted); font-size: .9rem; line-height: 1.55; margin: 0 0 .45rem; }
 .reason { color: var(--brand-strong); font-size: .82rem; line-height: 1.5; margin: 0; }
+.mapColor { height: 6px; width: 100%; }
 .actions { padding: .75rem 1rem 1rem; }
 .actions button { width: 100%; }

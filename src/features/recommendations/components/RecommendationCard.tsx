@@ -1,21 +1,28 @@
 import type { ScoredSpot } from '../recommendation.types';
-import { Button } from '../../../components/common/Button/Button';
+import type { ReactNode } from 'react';
 import styles from './RecommendationCard.module.css';
 import type { SpotColor } from '../../map/spotColors';
+import type { TravelStyle } from '../../../types/travelPlan';
 
 const clockIcon = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>;
 const carIcon = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M5 16l1.5-5A2 2 0 0 1 8.4 9.5h7.2a2 2 0 0 1 1.9 1.5L19 16" /><rect x="3" y="16" width="18" height="4" rx="1" /><circle cx="7" cy="20" r="1" /><circle cx="17" cy="20" r="1" /></svg>;
 const heartOutline = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 20s-7-4.5-9.2-9C1.3 8 3 4.5 6.3 4.5c2 0 3.2 1.2 4.7 3 1.5-1.8 2.7-3 4.7-3C19 4.5 20.7 8 21.2 11c-2.2 4.5-9.2 9-9.2 9z" /></svg>;
 const heartFill = <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20s-7-4.5-9.2-9C1.3 8 3 4.5 6.3 4.5c2 0 3.2 1.2 4.7 3 1.5-1.8 2.7-3 4.7-3C19 4.5 20.7 8 21.2 11c-2.2 4.5-9.2 9-9.2 9z" /></svg>;
+const categoryMeta: Record<TravelStyle, { label: string; icon: ReactNode }> = {
+  culture: { label: '문화·역사', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-7h6v7M3 9h18" /></svg> },
+  nature: { label: '자연·경관', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 21V9M5 21c0-4 2.5-6 7-6s7 2 7 6M7 11c0-3 2-5 5-5s5 2 5 5" /></svg> },
+  food: { label: '맛집·카페', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M7 3v8M4 3v5a3 3 0 0 0 6 0V3M7 11v10M16 3v18M16 3c3 1 4 3 4 6h-4" /></svg> },
+  activity: { label: '체험·액티비티', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3z" /></svg> },
+};
 
 const estMinutes = (km: number) => Math.max(5, Math.round((km / 50) * 60)); // 약 50km/h 가정 미리보기
 
-export function RecommendationCard({ spot, selected, liked = false, mapColor, onSelect, onToggleLike, onReject }: { spot: ScoredSpot; selected: boolean; liked?: boolean; mapColor?: SpotColor; onSelect: () => void; onToggleLike?: () => void; onReject?: () => void }) {
+export function RecommendationCard({ spot, selected, liked = false, mapColor, onSelect, onToggleLike }: { spot: ScoredSpot; selected: boolean; liked?: boolean; mapColor?: SpotColor; onSelect: () => void; onToggleLike?: () => void }) {
   const hasDistance = spot.distanceKm !== undefined;
   return (
     <article className={`${styles.card} ${selected ? styles.selected : ''}`}>
       {onToggleLike && (
-        <button type="button" className={`${styles.heart} ${liked ? styles.hearted : ''}`} aria-label={liked ? '찜 해제' : '찜하기'} aria-pressed={liked} onClick={onToggleLike}>
+        <button type="button" className={`${styles.heart} ${liked ? styles.hearted : ''}`} aria-label={liked ? '찜 해제' : '찜하기'} aria-pressed={liked} onClick={(event) => { event.stopPropagation(); onToggleLike(); }}>
           {liked ? heartFill : heartOutline}
         </button>
       )}
@@ -28,14 +35,13 @@ export function RecommendationCard({ spot, selected, liked = false, mapColor, on
           </span>
         </div>
         <div className={styles.info}>
-          <div className={styles.titleRow}>{spot.name}</div>
-          {mapColor && <span className={styles.mapColor} style={{ backgroundColor: mapColor.value }}>지도 {mapColor.name}</span>}
+          <div className={styles.titleRow}><span className={styles.categoryIcon} aria-label={categoryMeta[spot.category].label} title={categoryMeta[spot.category].label}>{categoryMeta[spot.category].icon}</span>{spot.name}</div>
           <p className={styles.desc}>{spot.region} · {spot.description}</p>
           {spot.tags.length > 0 && <div className={styles.tags}>{spot.tags.slice(0, 3).map((tag) => <span key={tag} className={styles.tag}>#{tag}</span>)}</div>}
           {spot.reason && <p className={styles.reason}>{spot.reason}</p>}
         </div>
       </button>
-      {onReject && <div className={styles.actions}><Button variant="secondary" type="button" onClick={onReject}>다음 후보로</Button></div>}
+      {mapColor && <div className={styles.mapColor} style={{ backgroundColor: mapColor.value }} aria-label={`지도 표시 색상 ${mapColor.name}`} title={`지도 표시 색상: ${mapColor.name}`} />}
     </article>
   );
 }
