@@ -33,16 +33,17 @@ export function RecommendationPage() {
           <section className={styles.panel} aria-live="polite">
             <div className="progress">{plan.spots.length + 1}번째 추천</div>
             <h2>{plan.destination.name}에서 어디가 좋을까요?</h2>
+            <p className="hint">후보를 하나 선택하면 계획에 추가되고 다음 관광지 후보를 보여드립니다. 원할 때 계획 수립을 완료할 수 있습니다.</p>
             <p className="hint">Google Places 후보를 GPT agent가 취향과 이동 조건에 맞춰 골라드립니다.</p>
             {error && <ErrorMessage message={error} />}
-            {loading ? <div className="loading">관광지 후보를 찾고 추천하는 중입니다.</div> : (
+            {loading ? <div className="loading">다음 관광지 후보를 준비하는 중입니다.</div> : (
               <div className={styles.cards}>
                 {candidates.length ? candidates.map((spot) => <RecommendationCard key={spot.id} spot={spot} selected={current?.id === spot.id} liked={liked.some((item) => item.id === spot.id)} onSelect={() => choose(spot)} onToggleLike={() => toggleLike(spot)} />) : <div className="complete">추천 후보가 없습니다. API 설정과 검색 반경을 확인하세요.</div>}
               </div>
             )}
             <div className={styles.actions}>
               <Button variant="secondary" type="button" onClick={() => navigate('/')}>처음부터</Button>
-              <Button variant="secondary" type="button" disabled={!plan.spots.length} onClick={() => navigate('/review')}>계획 검토</Button>
+              <Button type="button" disabled={!plan.spots.length} onClick={() => navigate('/review')}>계획 수립 완료</Button>
             </div>
             <div className={styles.selected}>
               <h3>내 여행 목록</h3>

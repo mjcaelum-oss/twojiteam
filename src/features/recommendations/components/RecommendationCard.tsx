@@ -17,7 +17,7 @@ export function RecommendationCard({ spot, selected, liked = false, onSelect, on
           {liked ? heartFill : heartOutline}
         </button>
       )}
-      <button type="button" className={styles.body} onClick={onSelect}>
+      <button type="button" className={styles.body} aria-label={`${spot.name} 선택 후 다음 후보 보기`} onClick={onSelect}>
         <div className={styles.thumb} style={spot.photoUrl ? { backgroundImage: `url(${spot.photoUrl})` } : undefined}>
           {!spot.photoUrl && <span className={styles.initial}>{spot.name.trim().charAt(0)}</span>}
           <span className={styles.badge}>
