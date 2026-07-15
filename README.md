@@ -16,6 +16,8 @@ npm run dev
 
 프로덕션 검증은 `npm run lint`, `npm run test`, `npm run build`로 실행합니다.
 
+`npm run dev`로 실행하면 Vite가 `/api/recommendations`를 로컬 미들웨어로 연결하므로 배포 없이 추천 API를 확인할 수 있습니다. `.env.local`에 `OPENAI_API_KEY`를 넣으면 실제 OpenAI 추천을 호출하며, 키가 없으면 API가 설정 오류를 반환합니다. 환경변수 변경 후에는 개발 서버를 재시작하세요.
+
 ## 환경변수와 데이터 모드
 
 `.env.local`에 `.env.example`의 값을 넣습니다. 관광지 데이터는 mock 목록을 사용하지 않고 Google Places에서 조회합니다. `VITE_DATA_MODE=supabase`는 여행 계획 저장소 선택에만 사용하며, Supabase 설정이 없을 때 명확한 오류를 보여줍니다.
@@ -29,8 +31,8 @@ npm run dev
 | `VITE_OPENAI_RECOMMENDATION_URL` | `/api/recommendations` (비워도 기본값 사용) | 공개 가능; OpenAI 키를 넣지 않음 |
 | `VITE_TOUR_API_ENABLED` | 관광 API 사용 여부 | 공개 가능 |
 | `VITE_API_BASE_URL` | 서버/Edge Function 주소 | 공개 가능 |
-| `OPENAI_API_KEY` | Vercel Function에서 OpenAI 호출 | 서버 전용 |
-| `OPENAI_MODEL` | OpenAI 모델, 기본값 `gpt-5.6-luna` | 서버 전용 설정 |
+| `OPENAI_API_KEY` | 로컬 Vite API/ Vercel Function에서 OpenAI 호출 | 서버 전용 |
+| `OPENAI_MODEL` | 로컬 Vite API/ Vercel Function에서 사용할 모델 | 서버 전용 설정 |
 
 서비스 역할 키, TourAPI 비밀키 등 서버 전용 키는 `VITE_` 변수에 넣지 않습니다.
 
@@ -51,7 +53,7 @@ Supabase CLI가 설치되어 있다면 프로젝트 연결 후 migration과 seed
 
 구현된 범위는 검색 조건(지역, 취향, 날짜, 시각, 인원), Google Places Nearby Search 후보 수집·도메인 변환, OpenAI 추천 client, 지도 로더/마커 fallback, 계획 선택·삭제·순서 변경·이동수단 선택, 시간 경고, 비용/시간 요약, localStorage repository, Supabase client/repository 인터페이스입니다.
 
-OpenAI 호출은 `api/recommendations.js`에서 직접 처리합니다. 별도의 recommendation agent 서버는 사용하지 않습니다. Vercel Project Settings에서 `OPENAI_API_KEY`를 서버 환경변수로 설정하고 재배포해야 합니다. 프론트는 기본적으로 같은 배포의 `/api/recommendations`에 POST합니다.
+OpenAI 호출은 `api/recommendations.js`에서 직접 처리합니다. 별도의 recommendation agent 서버는 사용하지 않습니다. 로컬에서는 Vite 개발 미들웨어가 같은 핸들러를 사용하고, 배포에서는 Vercel Function으로 동작합니다. 프론트는 기본적으로 `/api/recommendations`에 POST합니다.
 
 ## Google Maps 키 보안
 

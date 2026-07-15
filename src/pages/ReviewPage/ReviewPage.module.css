@@ -14,6 +14,7 @@
 .ticket::after { right: -9px; }
 .index { width: 30px; height: 30px; flex: none; border-radius: 999px; background: var(--brand); color: #fff; font-weight: 800; display: grid; place-items: center; }
 .thumb { width: 44px; height: 44px; flex: none; border-radius: 11px; background: linear-gradient(135deg, #eaf1ff, #dbe7ff); color: var(--brand-strong); font-weight: 800; display: grid; place-items: center; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
 .ticketBody { flex: 1; display: grid; gap: .15rem; min-width: 0; }
 .ticketBody span, .ticketBody small { color: var(--muted); font-size: .85rem; }
 .itemActions { display: flex; gap: .35rem; margin-top: .5rem; flex-wrap: wrap; }

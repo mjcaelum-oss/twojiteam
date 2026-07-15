@@ -36,7 +36,7 @@ export default async function handler(request, response) {
       method: 'POST',
       headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'gpt-5.6-luna',
+        model: process.env.OPENAI_MODEL || 'gpt-5.6-luna',
         instructions: 'Choose up to 3 travel spots only from the supplied candidates. Respect destination, travel style, pace, companion, selectedIds, rejectedIds, and previousSpotId. Never invent spot IDs. Return concise Korean reasons.',
         input: JSON.stringify({ destination: input.destination, preferences: input.preferences, selectedIds: input.selectedIds || [], rejectedIds: input.rejectedIds || [], previousSpotId: input.previousSpotId || null, spots: candidates }),
         text: { format: { type: 'json_schema', name: 'travel_recommendations', strict: true, schema: recommendationSchema } }

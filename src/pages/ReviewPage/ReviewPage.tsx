@@ -25,7 +25,7 @@ export function ReviewPage() {
       <PageContainer className={styles.page}>
         <div className={styles.layout}>
           <div className={styles.mapCol}>
-            <TravelMap spots={plan.spots.map((item) => item.spot)} selected={plan.spots.map((item) => item.spot)} />
+            <TravelMap spots={[]} selected={plan.spots.map((item) => item.spot)} routes={plan.spots.slice(0, -1).map((item, index) => ({ origin: item.spot, destination: plan.spots[index + 1].spot, mode: plan.spots[index + 1].transportMode ?? 'DRIVING' }))} />
           </div>
           <section className={styles.panel}>
             <div className="progress">TRAVEL PLAN</div>
@@ -45,7 +45,7 @@ export function ReviewPage() {
                   <li key={item.spot.id}>
                     <div className={styles.ticket}>
                       <div className={styles.index}>{index + 1}</div>
-                      <div className={styles.thumb} aria-hidden="true">{item.spot.name.trim().charAt(0)}</div>
+                      <div className={styles.thumb}>{item.spot.photoUrl ? <img src={item.spot.photoUrl} alt="" /> : item.spot.name.trim().charAt(0)}</div>
                       <div className={styles.ticketBody}>
                         <strong>{item.spot.name}</strong>
                         <span>{item.spot.region} · {item.spot.feeAmount ? `${item.spot.feeAmount.toLocaleString()}원` : item.spot.feeNote} · {item.spot.durationMinutes}분</span>

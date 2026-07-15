@@ -9,7 +9,8 @@ const regionKeywords: Record<string, string[]> = {
   seoul: ['서울'], busan: ['부산'], gangwon: ['강원', '강릉', '속초', '평창', '정동진'],
   jeonbuk: ['전북', '전주', '완주', '정읍', '남원', '부안'],
   jeonnam: ['전남', '여수', '순천', '담양', '목포', '보성'],
-  jeju: ['제주', '서귀포']
+  jeju: ['제주', '서귀포'],
+  'new-york': ['뉴욕', 'New York', 'NYC']
 };
 function resolveDestination(text: string): Destination | null {
   const trimmed = text.trim();
@@ -29,10 +30,10 @@ export function DestinationSearch({ value, onChange }: DestinationSearchProps) {
         className={styles.input}
         type="text"
         value={text}
-        placeholder="가고 싶은 지역을 입력해주세요 (예: 부산, 여수, 제주)"
+        placeholder="가고 싶은 지역을 입력해주세요 (예: 부산, 여수, 제주, 뉴욕)"
         onChange={(event) => { setText(event.target.value); onChange(resolveDestination(event.target.value)); }}
       />
-      <p className={styles.hint}>{text.trim() && !resolved ? '아직 지원하지 않는 지역이에요. 서울·부산·강원·전북·전남·제주 인근으로 입력해주세요.' : '입력한 지역 인근의 관광지를 추천해드려요.'}</p>
+      <p className={styles.hint}>{text.trim() && !resolved ? '아직 지원하지 않는 지역이에요. 서울·부산·강원·전북·전남·제주·뉴욕 인근으로 입력해주세요.' : '입력한 지역 인근의 관광지를 추천해드려요.'}</p>
     </div>
   );
 }
