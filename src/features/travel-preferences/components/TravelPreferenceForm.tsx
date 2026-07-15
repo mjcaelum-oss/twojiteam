@@ -5,15 +5,15 @@ import styles from './TravelPreferenceForm.module.css';
 export interface TravelPreferenceFormProps {
   preferences: Partial<TravelPreferences>;
   date: string;
-  startTime: string;
+  returnDate: string;
   partySize: number;
   onPreferencesChange: (value: Partial<TravelPreferences>) => void;
   onDateChange: (value: string) => void;
-  onStartTimeChange: (value: string) => void;
+  onReturnDateChange: (value: string) => void;
   onPartySizeChange: (value: number) => void;
 }
 
-export function TravelPreferenceForm({ preferences, date, startTime, partySize, onPreferencesChange, onDateChange, onStartTimeChange, onPartySizeChange }: TravelPreferenceFormProps) {
+export function TravelPreferenceForm({ preferences, date, returnDate, partySize, onPreferencesChange, onDateChange, onReturnDateChange, onPartySizeChange }: TravelPreferenceFormProps) {
   return (
     <div className={styles.form}>
       <section className={styles.section}>
@@ -46,8 +46,8 @@ export function TravelPreferenceForm({ preferences, date, startTime, partySize, 
       <section className={styles.section}>
         <div className={styles.qtitle}><span className={styles.qnum}>4</span> 일정</div>
         <div className={styles.inline}>
-          <label className={styles.field}>여행 날짜<input type="date" value={date} onChange={(event) => onDateChange(event.target.value)} /></label>
-          <label className={styles.field}>출발 시각<input type="time" value={startTime} onChange={(event) => onStartTimeChange(event.target.value)} /></label>
+          <label className={styles.field}>도착일<input type="date" value={date} onChange={(event) => onDateChange(event.target.value)} /></label>
+          <label className={styles.field}>귀가일<input type="date" value={returnDate} onChange={(event) => onReturnDateChange(event.target.value)} /></label>
           <label className={styles.field}>인원수<input type="number" min={1} max={10} value={partySize} onChange={(event) => onPartySizeChange(Number(event.target.value))} /></label>
         </div>
       </section>
@@ -59,3 +59,6 @@ export function TravelPreferenceForm({ preferences, date, startTime, partySize, 
     </div>
   );
 }
+
+
+

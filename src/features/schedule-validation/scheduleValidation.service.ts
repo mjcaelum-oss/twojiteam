@@ -2,11 +2,15 @@ import type { TravelPlan } from '../../types/travelPlan';
 import type { ScheduleItem, ScheduleWarning } from './scheduleValidation.types';
 
 const atMinutes = (date: Date, value: string) => { const [hours, minutes] = value.split(':').map(Number); const result = new Date(date); result.setHours(hours, minutes, 0, 0); return result; };
+const dateOf = (plan: TravelPlan, index: number) => plan.spots[index].travelDate ?? plan.travelDate;
 
 export function buildSchedule(plan: TravelPlan): ScheduleItem[] {
-  let cursor = atMinutes(new Date(`${plan.travelDate}T00:00:00`), plan.startTime);
+  let cursor = atMinutes(new Date(`${plan.travelDate}T00:00:00`), plan.dayStartTimes?.[plan.travelDate] ?? plan.startTime);
   return plan.spots.map((item, index) => {
-    cursor = new Date(cursor.getTime() + (plan.routes[index - 1]?.durationMinutes ?? 0) * 60000);
+    const currentDate = dateOf(plan, index);
+    const previousDate = index > 0 ? dateOf(plan, index - 1) : currentDate;
+    if (index > 0 && currentDate !== previousDate) cursor = atMinutes(new Date(`${currentDate}T00:00:00`), plan.dayStartTimes?.[currentDate] ?? '09:00');
+    else cursor = new Date(cursor.getTime() + (plan.routes[index - 1]?.durationMinutes ?? 0) * 60000);
     const arrival = new Date(cursor);
     const departure = new Date(arrival.getTime() + item.spot.durationMinutes * 60000);
     cursor = departure;
@@ -15,9 +19,10 @@ export function buildSchedule(plan: TravelPlan): ScheduleItem[] {
 }
 
 export function validateSchedule(plan: TravelPlan): ScheduleWarning[] {
-  return buildSchedule(plan).flatMap<ScheduleWarning>(({ spot, arrival }) => {
+  return buildSchedule(plan).flatMap<ScheduleWarning>(({ spot, arrival }, index) => {
+    const date = dateOf(plan, index);
     const hours = spot.openingHours.weekly[arrival.getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6];
-    if (spot.openingHours.closedDates?.includes(plan.travelDate) || hours === null) return [{ spotId: spot.id, kind: 'closed' as const, message: `${spot.name}은(는) 해당 날짜에 휴무입니다.` }];
+    if (spot.openingHours.closedDates?.includes(date) || hours === null) return [{ spotId: spot.id, kind: 'closed' as const, message: `${spot.name}은(는) 해당 날짜에 휴무입니다.` }];
     if (!hours) return [];
     const close = atMinutes(arrival, hours.close);
     if (arrival >= close) return [{ spotId: spot.id, kind: 'after-close' as const, message: `${spot.name}은(는) 도착 예정 시간이 영업 종료 후입니다.` }];

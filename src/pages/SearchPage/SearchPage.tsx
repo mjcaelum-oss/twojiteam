@@ -15,12 +15,12 @@ export function SearchPage() {
   const [destination, setDestination] = useState<{ name: string; latitude: number; longitude: number } | null>(null);
   const [preferences, setPreferences] = useState<Partial<TravelPreferences>>({});
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [startTime, setStartTime] = useState('09:00');
+  const [returnDate, setReturnDate] = useState(date);
   const [partySize, setPartySize] = useState(2);
-  const ready = Boolean(destination && preferences.style && preferences.pace && preferences.companion);
+  const ready = Boolean(destination && preferences.style && preferences.pace && preferences.companion && returnDate >= date);
   const submit = () => {
     if (!destination || !preferences.style || !preferences.pace || !preferences.companion) return;
-    setPlan({ id: crypto.randomUUID(), title: `${destination.name} 여행 계획`, destination, travelDate: date, startTime, preferences: { style: preferences.style, pace: preferences.pace, companion: preferences.companion, notes: preferences.notes?.trim() || undefined }, partySize, spots: [], routes: [], status: 'draft' });
+    setPlan({ id: crypto.randomUUID(), title: `${destination.name} 여행 계획`, destination, travelDate: date, startTime: '09:00', returnDate, dayStartTimes: {}, preferences: { style: preferences.style, pace: preferences.pace, companion: preferences.companion, notes: preferences.notes?.trim() || undefined }, partySize, spots: [], routes: [], status: 'draft' });
     navigate('/recommendations');
   };
   return (
@@ -36,11 +36,11 @@ export function SearchPage() {
           <TravelPreferenceForm
             preferences={preferences}
             date={date}
-            startTime={startTime}
+            returnDate={returnDate}
             partySize={partySize}
             onPreferencesChange={setPreferences}
             onDateChange={setDate}
-            onStartTimeChange={setStartTime}
+            onReturnDateChange={setReturnDate}
             onPartySizeChange={setPartySize}
           />
           <DestinationSearch value={destination ? destination.name : ''} onChange={setDestination} />
@@ -53,3 +53,6 @@ export function SearchPage() {
     </>
   );
 }
+
+
+
