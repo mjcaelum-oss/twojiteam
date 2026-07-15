@@ -22,6 +22,9 @@ export function validateSchedule(plan: TravelPlan): ScheduleWarning[] {
   return buildSchedule(plan).flatMap<ScheduleWarning>(({ spot, arrival }, index) => {
     const date = dateOf(plan, index);
     const hours = spot.openingHours.weekly[arrival.getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6];
+    if (spot.openingHours.status === 'CLOSED_TEMPORARILY') return [{ spotId: spot.id, kind: 'closed' as const, message: `${spot.name}은(는) Google Places에 임시 휴업으로 표시되어 있습니다.` }];
+    if (spot.openingHours.status === 'CLOSED_PERMANENTLY') return [{ spotId: spot.id, kind: 'closed' as const, message: `${spot.name}은(는) Google Places에 영업 종료로 표시되어 있습니다.` }];
+    if (spot.openingHours.status === 'FUTURE_OPENING') return [{ spotId: spot.id, kind: 'closed' as const, message: `${spot.name}은(는) Google Places에 아직 개장 전으로 표시되어 있습니다.` }];
     if (spot.openingHours.closedDates?.includes(date) || hours === null) return [{ spotId: spot.id, kind: 'closed' as const, message: `${spot.name}은(는) 해당 날짜에 휴무입니다.` }];
     if (!hours) return [];
     const close = atMinutes(arrival, hours.close);

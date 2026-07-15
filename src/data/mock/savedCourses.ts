@@ -1,3 +1,5 @@
+import type { TravelPlan } from '../../types/travelPlan';
+
 // 마이페이지 "저장된 여행 코스" 목업 데이터. 백엔드 연동 전까지 상세 페이지가 함께 사용합니다.
 export interface CourseSpot {
   name: string;
@@ -7,12 +9,14 @@ export interface CourseSpot {
   fee: string;
   hours: string;
   address: string;
+  photoUrl?: string;
 }
 export interface SavedCourse {
   id: string;
   name: string;
   initial: string;
   spots: CourseSpot[];
+  plan?: TravelPlan;
 }
 
 export const savedCourses: SavedCourse[] = [
@@ -63,7 +67,7 @@ export function formatDuration(minutes: number): string {
   return h ? `${h}시간${m ? ` ${m}분` : ''}` : `${m}분`;
 }
 export function courseTotalMinutes(course: SavedCourse): number {
-  return course.spots.reduce((total, spot) => total + spot.durationMinutes, 0);
+  return course.spots.reduce((total, spot) => total + spot.durationMinutes, 0) + (course.plan?.routes.reduce((total, route) => total + (route?.durationMinutes ?? 0), 0) ?? 0);
 }
 export function courseMeta(course: SavedCourse): string {
   return `${course.spots.length}곳 · 관광 예상 ${formatDuration(courseTotalMinutes(course))}`;

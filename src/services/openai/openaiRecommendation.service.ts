@@ -5,7 +5,7 @@ import type { Destination, TravelPreferences } from '../../types/travelPlan';
 
 export interface OpenAIRecommendation { spotId: string; reason: string; }
 export interface OpenAIRecommendationResponse { recommendations: OpenAIRecommendation[]; }
-export interface OpenAIRecommendationInput { destination: Destination; preferences: TravelPreferences; spots: Spot[]; selectedIds: string[]; rejectedIds: string[]; previousSpotId?: string; previousVenueType?: Spot['venueType']; recommendationTime?: string; }
+export interface OpenAIRecommendationInput { destination: Destination; preferences: TravelPreferences; spots: Spot[]; selectedIds: string[]; rejectedIds: string[]; previousSpotId?: string; previousVenueType?: Spot['venueType']; recommendationDate?: string; recommendationTime?: string; }
 
 export async function requestOpenAIRecommendations(input: OpenAIRecommendationInput): Promise<OpenAIRecommendationResponse> {
   const response = await fetch(env.openAIRecommendationUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input) });

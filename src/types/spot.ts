@@ -4,6 +4,7 @@ export interface OpeningHours {
   weekly: Partial<Record<0 | 1 | 2 | 3 | 4 | 5 | 6, { open: string; close: string } | null>>;
   closedDates?: string[];
   note?: string;
+  status?: 'OPERATIONAL' | 'CLOSED_TEMPORARILY' | 'CLOSED_PERMANENTLY' | 'FUTURE_OPENING' | 'UNKNOWN';
 }
 
 export interface Spot {

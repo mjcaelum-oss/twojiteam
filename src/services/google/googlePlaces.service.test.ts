@@ -25,6 +25,7 @@ describe('searchTouristSpots', () => {
           photos: [{ getURI: () => 'https://images.example/palace.jpg' }],
           rating: 4.8,
           priceRange: { startPrice: { currencyCode: 'KRW', units: 3000 } },
+          regularOpeningHours: { periods: [{ open: { day: 2, hour: 9, minute: 0 }, close: { day: 2, hour: 18, minute: 0 } }] },
         },
       ],
     });
@@ -63,6 +64,7 @@ describe('searchTouristSpots', () => {
       source: 'places',
       durationMinutes: 120,
       feeAmount: 3000,
+      openingHours: { weekly: { 2: { open: '09:00', close: '18:00' } }, status: 'UNKNOWN' },
     });
   });
 });

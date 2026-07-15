@@ -12,40 +12,41 @@
 .timeline li[draggable="true"] { cursor: grab; }
 .timeline li[aria-grabbed="true"] { opacity: .55; }
 .dragHandle { flex: none; color: var(--muted); font-size: 1.35rem; line-height: 30px; cursor: grab; user-select: none; }
+.dragTools { display: flex; flex-direction: column; align-items: center; align-self: stretch; gap: .25rem; flex: none; }
+.deleteButton { width: 26px; height: 26px; display: grid; place-items: center; margin-top: auto; border: 0; border-radius: 999px; padding: 0; background: #fee2e2; color: #b91c1c; cursor: pointer; transition: background-color .2s ease, color .2s ease, transform .2s ease; }
+.deleteButton:hover { background: #b91c1c; color: #fff; transform: scale(1.08); }
+.deleteButton svg { width: 15px; height: 15px; }
 .ticket::before, .ticket::after { content: ""; position: absolute; top: 50%; width: 16px; height: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; transform: translateY(-50%); }
 .ticket::before { left: -9px; }
 .ticket::after { right: -9px; }
 .index { width: 30px; height: 30px; flex: none; border-radius: 999px; background: var(--brand); color: #fff; font-weight: 800; display: grid; place-items: center; }
-.thumb { width: 44px; height: 44px; flex: none; border-radius: 11px; background: linear-gradient(135deg, #eaf1ff, #dbe7ff); color: var(--brand-strong); font-weight: 800; display: grid; place-items: center; }
+.thumb { width: 44px; height: 44px; flex: none; border-radius: 11px; background: linear-gradient(135deg, #eaf1ff, #dbe7ff); https://github.com/kwoncoda/twojiteam/pull/22/conflict?name=src%252Fpages%252FReviewPage%252FReviewPage.tsx&ancestor_oid=798afeafdb2f7defb13b16de5f81fc7199e2caf7&base_oid=36648c2588db401a7da8d999a30eddfd50be03e6&head_oid=87369b4085a4ff1a3290a86f5341b0c566245cedcolor: var(--brand-strong); font-weight: 800; display: grid; place-items: center; }
 .thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
 .ticketBody { flex: 1; display: grid; gap: .15rem; min-width: 0; }
 .ticketBody span, .ticketBody small { color: var(--muted); font-size: .85rem; }
-.itemActions { display: flex; gap: .35rem; margin-top: .5rem; flex-wrap: wrap; }
-.itemActions button { min-height: 34px; padding: .3rem .6rem; font-size: .82rem; }
 .leg { position: relative; display: flex; align-items: center; gap: .7rem; padding: .6rem 0 .6rem 1.1rem; margin-left: 15px; }
-.leg::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; border-left: 2px dashed var(--brand); opacity: .5; }
+.leg::before { content: ""; position: absolute; left: 0; top: 0; bottom: 9px; border-left: 2px dashed var(--brand); opacity: .5; }
+.leg::after { content: ""; position: absolute; left: -4px; bottom: 3px; width: 7px; height: 7px; border-right: 2px solid var(--brand); border-bottom: 2px solid var(--brand); transform: rotate(45deg); opacity: .7; }
 .transport { display: inline-flex; align-items: center; gap: .4rem; color: var(--muted); font-size: .85rem; font-weight: 700; }
+.transportTitle { display: inline-flex; align-items: center; gap: .25rem; }
+.transportTitle svg { width: 17px; height: 17px; color: var(--brand); }
 .transport select { min-height: 36px; padding: .3rem .6rem; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); font: inherit; }
 .legInfo { color: var(--brand-strong); font-size: .82rem; font-weight: 700; }
 
 .actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1.25rem; }
 .actions button:nth-child(2) { flex: 1; }
 .saved { color: #176b45; font-weight: 700; }
-.saveOverlay { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; align-content: center; gap: .45rem; background: rgba(20, 31, 58, .28); backdrop-filter: blur(5px); color: #fff; animation: overlayIn .2s ease-out; }
-.saveOverlay strong { font-size: 1.2rem; }
-.saveOverlay span { font-size: .86rem; opacity: .88; }
-.saveOrb { position: relative; width: 92px; height: 92px; margin-bottom: .35rem; border: 8px solid rgba(255, 255, 255, .25); border-top-color: #8ec5ff; border-right-color: #b9a7ff; border-radius: 50%; box-shadow: 0 0 0 8px rgba(255, 255, 255, .08), inset 0 0 18px rgba(255, 255, 255, .35), 0 12px 30px rgba(4, 12, 35, .3); transform: perspective(220px) rotateX(18deg); animation: orbSpin .9s linear infinite; }
-.saveOrb::before, .saveOrb::after { content: ""; position: absolute; inset: 12px; border: 3px solid rgba(255, 255, 255, .3); border-left-color: #fff; border-radius: 50%; }
-.saveOrb::after { inset: 23px; border: 2px dashed rgba(255, 255, 255, .7); animation: orbSpinReverse .65s linear infinite; }
-.saveOrbCore { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-size: 1.65rem; font-weight: 900; text-shadow: 0 2px 8px rgba(0, 0, 0, .2); }
-.saveOrbComplete { border-color: #8ff0bd; animation: savePop .38s cubic-bezier(.2, 1.6, .4, 1) both; }
-.saveOrbComplete::before, .saveOrbComplete::after { display: none; }
-@keyframes orbSpin { to { transform: perspective(220px) rotateX(18deg) rotate(360deg); } }
-@keyframes orbSpinReverse { to { transform: rotate(-360deg); } }
-@keyframes savePop { 50% { transform: perspective(220px) rotateX(18deg) scale(1.2); } to { transform: perspective(220px) rotateX(18deg) scale(1); } }
-@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+.undoMessage { position: fixed; left: 50%; bottom: 1.5rem; z-index: 10; display: flex; align-items: center; gap: .7rem; transform: translateX(-50%); padding: .7rem 1rem; border-radius: 999px; background: var(--ink); color: #fff; box-shadow: var(--shadow-lg); animation: undoIn .2s ease; }
+.undoMessage button { border: 0; border-radius: 999px; padding: .3rem .7rem; background: #fff; color: var(--ink); font-weight: 800; cursor: pointer; }
+@keyframes undoIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+.modalBackdrop { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 1rem; background: rgba(15, 23, 42, .42); animation: modalIn .18s ease; }
+.saveDialog { width: min(100%, 400px); display: grid; gap: .65rem; padding: 1.35rem; border-radius: 16px; background: #fff; box-shadow: var(--shadow-lg); }
+.saveDialog h3 { margin: 0 0 .2rem; }
+.saveDialog label { color: var(--muted); font-size: .85rem; font-weight: 700; }
+.saveDialog input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: .7rem; font: inherit; }
+.dialogActions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: .5rem; }
+@keyframes modalIn { from { opacity: 0; } to { opacity: 1; } }
 @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .mapCol { position: static; } }
 
 .daySelect { display: flex; align-items: center; gap: .5rem; margin: 1rem 0; color: var(--muted); font-weight: 700; }
 .daySelect select { min-height: 36px; padding: .3rem .6rem; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); font: inherit; }
-

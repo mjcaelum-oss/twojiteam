@@ -32,6 +32,18 @@ function preferenceScore(spot, preferences) {
   if (preferences.pace === 'fast' && spot.durationMinutes <= 90) score += 10;
   return score;
 }
+function isOpenAtRecommendationTime(spot, date, time) {
+  if (['CLOSED_TEMPORARILY', 'CLOSED_PERMANENTLY', 'FUTURE_OPENING'].includes(spot.openingHours?.status)) return false;
+  const weekly = spot.openingHours?.weekly;
+  if (!date || !time || !weekly) return true;
+  const day = new Date(`${date}T00:00:00`).getDay();
+  const hours = weekly[day];
+  if (!hours) return true;
+  const current = Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
+  const open = Number(hours.open.slice(0, 2)) * 60 + Number(hours.open.slice(3, 5));
+  const close = Number(hours.close.slice(0, 2)) * 60 + Number(hours.close.slice(3, 5));
+  return current >= open && current < close;
+}
 
 export default async function handler(request, response) {
   response.setHeader('Access-Control-Allow-Origin', '*');
@@ -46,7 +58,7 @@ export default async function handler(request, response) {
     const time = input.recommendationTime ? input.recommendationTime.split(':').map(Number) : [];
     const minutes = time.length >= 2 ? time[0] * 60 + time[1] : -1;
     const mealTime = (minutes >= 660 && minutes <= 840) || (minutes >= 1020 && minutes <= 1260);
-    const candidates = input.spots.filter((spot) => !input.selectedIds?.includes(spot.id) && !input.rejectedIds?.includes(spot.id) && !(input.previousVenueType === 'restaurant' && spot.venueType === 'restaurant'))
+    const candidates = input.spots.filter((spot) => !input.selectedIds?.includes(spot.id) && !input.rejectedIds?.includes(spot.id) && !(input.previousVenueType === 'restaurant' && spot.venueType === 'restaurant') && isOpenAtRecommendationTime(spot, input.recommendationDate, input.recommendationTime))
       .sort((a, b) => (preferenceScore(b, input.preferences) - preferenceScore(a, input.preferences)) || (Number(mealTime && b.category === 'food') - Number(mealTime && a.category === 'food')) || (b.popularity || 0) - (a.popularity || 0))
       .slice(0, 20);
     const openAiResponse = await fetch('https://api.openai.com/v1/responses', {
@@ -55,7 +67,7 @@ export default async function handler(request, response) {
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || 'gpt-5.6-luna',
         instructions: 'Act as a preference-first travel planner. First evaluate every supplied candidate against the user profile, then rank them with this order: hard exclusions, preferred style/category, companion fit, pace fit, meal-time fit, distance/popularity. Return exactly 5 recommendations when at least 5 candidates are supplied, and fewer only when fewer than 5 remain. Strongly prioritize preferences.style, preferences.companion, preferences.pace, and preferences.notes; do not treat them as optional context. If the previous venue type is restaurant, do not recommend another restaurant immediately; cafes are separate and remain eligible. During 11:00-14:00 or 17:00-21:00, strongly prioritize food candidates such as restaurants, cafes, and bakeries because it is likely a meal time. Respect destination, selectedIds, rejectedIds, previousSpotId, and previousVenueType. Never invent spot IDs or recommend excluded candidates. Return concise Korean reasons that mention the matching preference when possible.',
-        input: JSON.stringify({ destination: input.destination, preferences: input.preferences, recommendationTime: input.recommendationTime || null, selectedIds: input.selectedIds || [], rejectedIds: input.rejectedIds || [], previousSpotId: input.previousSpotId || null, previousVenueType: input.previousVenueType || null, spots: candidates }),
+        input: JSON.stringify({ destination: input.destination, preferences: input.preferences, recommendationDate: input.recommendationDate || null, recommendationTime: input.recommendationTime || null, selectedIds: input.selectedIds || [], rejectedIds: input.rejectedIds || [], previousSpotId: input.previousSpotId || null, previousVenueType: input.previousVenueType || null, spots: candidates }),
         text: { format: { type: 'json_schema', name: 'travel_recommendations', strict: true, schema: recommendationSchema } }
       })
     });
