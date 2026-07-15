@@ -17,7 +17,7 @@ export function LoginPage() {
   return (
     <div className={styles.wrap}>
       <form className={styles.card} onSubmit={submit}>
-        <img src="/logo.jpg" alt="TRAVEL PICK" className={styles.logoImg} />
+        <img src="/logo.png" alt="TRAVEL PICK" className={styles.logoImg} />
         <p className={styles.sub}>국내 여행지를 취향에 맞게 골라보세요</p>
 
         <label className={styles.field} htmlFor="login-email">이메일
