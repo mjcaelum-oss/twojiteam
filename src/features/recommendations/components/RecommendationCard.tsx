@@ -8,7 +8,7 @@ const heartFill = <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20s-
 
 const estMinutes = (km: number) => Math.max(5, Math.round((km / 50) * 60)); // 약 50km/h 가정 미리보기
 
-export function RecommendationCard({ spot, selected, liked = false, onSelect, onReject, onToggleLike }: { spot: ScoredSpot; selected: boolean; liked?: boolean; onSelect: () => void; onReject: () => void; onToggleLike?: () => void }) {
+export function RecommendationCard({ spot, selected, liked = false, onSelect, onToggleLike }: { spot: ScoredSpot; selected: boolean; liked?: boolean; onSelect: () => void; onToggleLike?: () => void }) {
   const hasDistance = spot.distanceKm !== undefined;
   return (
     <article className={`${styles.card} ${selected ? styles.selected : ''}`}>
@@ -17,7 +17,7 @@ export function RecommendationCard({ spot, selected, liked = false, onSelect, on
           {liked ? heartFill : heartOutline}
         </button>
       )}
-      <button type="button" className={styles.body} onClick={onSelect}>
+      <button type="button" className={styles.body} aria-label={`${spot.name} 선택 후 다음 후보 보기`} onClick={onSelect}>
         <div className={styles.thumb} style={spot.photoUrl ? { backgroundImage: `url(${spot.photoUrl})` } : undefined}>
           {!spot.photoUrl && <span className={styles.initial}>{spot.name.trim().charAt(0)}</span>}
           <span className={styles.badge}>
