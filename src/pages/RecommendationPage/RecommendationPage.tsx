@@ -13,6 +13,7 @@ import { openAIRecommendationsToSpots, requestOpenAIRecommendations } from '../.
 import { useTravelPlan } from '../../app/providers/TravelPlanProvider';
 import { loadGoogleMaps } from '../../features/map/googleMaps.loader';
 import { requestRoute } from '../../features/routes/route.service';
+import { formatRouteCost } from '../../features/routes/routeCost.utils';
 import type { CalculatedRoute } from '../../features/routes/route.service';
 import { buildSchedule } from '../../features/schedule-validation/scheduleValidation.service';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
@@ -57,7 +58,7 @@ export function RecommendationPage() {
       <PageContainer className={styles.page}>
         <div className={styles.layout}>
           <div className={styles.mapCol}>
-            <TravelMap spots={awaitingTransport ? [] : candidates} selected={plan.spots.map((item) => item.spot)} routes={mapRoutes} onError={setError} />
+            <TravelMap spots={awaitingTransport ? [] : candidates} selected={plan.spots.map((item) => item.spot)} current={current} routes={mapRoutes} onError={setError} />
           </div>
           <section className={styles.panel} aria-live="polite">
             {error && <ErrorMessage message={error} />}
@@ -73,7 +74,7 @@ export function RecommendationPage() {
                     const route = routeOptions[transport];
                     return <button key={transport} type="button" className={`${styles.transportOption} ${mode === transport ? styles.transportSelected : ''}`} onClick={() => chooseTransport(transport)} disabled={!route || Boolean(route.summary.error)} aria-pressed={mode === transport}>
                       <strong>{transportLabels[transport]}</strong>
-                      <span>{route?.summary.error ? `경로 계산 실패: ${route.summary.error}` : route ? `${route.summary.durationMinutes}분${route.summary.costNote ? ` · ${route.summary.cost.toLocaleString()}원` : ''}` : '계산 중...'}</span>
+                      <span>{route?.summary.error ? `경로 계산 실패: ${route.summary.error}` : route ? `${route.summary.durationMinutes}분${route.summary.cost !== null && route.summary.costNote ? ` · ${formatRouteCost(route.summary.cost, route.summary.costCurrency)}` : ''}` : '계산 중...'}</span>
                       {route?.summary.costNote && <small>{route.summary.costNote}</small>}
                     </button>;
                   })}
@@ -104,5 +105,7 @@ export function RecommendationPage() {
     </>
   );
 }
+
+
 
 

@@ -9,7 +9,7 @@ declare namespace google.maps {
   class Polyline { constructor(options?: { map?: Map; path?: unknown[]; geodesic?: boolean; strokeColor?: string; strokeOpacity?: number; strokeWeight?: number }); setMap(map: Map | null): void; }
   interface DirectionsRequest { origin: string | LatLngLiteral; destination: string | LatLngLiteral; travelMode: string; transitOptions?: { departureTime: Date }; }
   interface DirectionsLeg { distance?: { value?: number }; duration?: { value?: number }; }
-  interface DirectionsRoute { legs: DirectionsLeg[]; fare?: { value?: number }; }
+  interface DirectionsRoute { legs: DirectionsLeg[]; fare?: { value?: number; currency?: string; text?: string }; }
   interface DirectionsResult { routes: DirectionsRoute[]; }
   class DirectionsService { route(request: DirectionsRequest): Promise<DirectionsResult>; }
   class DirectionsRenderer { constructor(options?: { map?: Map; suppressMarkers?: boolean; preserveViewport?: boolean; polylineOptions?: { strokeColor?: string; strokeOpacity?: number; strokeWeight?: number } }); setDirections(result: DirectionsResult): void; setMap(map: Map | null): void; }
@@ -23,7 +23,9 @@ declare namespace google.maps.routes {
 }
 declare namespace google.maps.places {
   interface PlacePhoto { getURI(options?: { maxWidth?: number; maxHeight?: number }): string; }
-  interface PlaceData { id?: string; displayName?: string; location?: google.maps.LatLng; formattedAddress?: string; googleMapsURI?: string; types?: string[]; photos?: PlacePhoto[]; rating?: number; userRatingCount?: number; }
+  interface PlaceMoney { currencyCode?: string; units?: number | string; nanos?: number; }
+  interface PlacePriceRange { startPrice?: PlaceMoney; endPrice?: PlaceMoney; }
+  interface PlaceData { id?: string; displayName?: string; location?: google.maps.LatLng; formattedAddress?: string; googleMapsURI?: string; types?: string[]; photos?: PlacePhoto[]; rating?: number; userRatingCount?: number; priceRange?: PlacePriceRange; }
   class Place { constructor(options?: { id?: string }); static searchNearby(request: Record<string, unknown>): Promise<{ places?: PlaceData[] }>; }
 }
 interface Window { initTravelPickMap?: () => void; gm_authFailure?: () => void; }

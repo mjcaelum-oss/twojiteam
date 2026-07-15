@@ -19,6 +19,7 @@ export interface Spot {
   photoUrl?: string;
   feeAmount: number;
   feeNote: string;
+  feeCurrency?: string;
   durationMinutes: number;
   openingHours: OpeningHours;
   popularity: number;

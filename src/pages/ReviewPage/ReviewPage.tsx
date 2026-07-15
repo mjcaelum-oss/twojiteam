@@ -11,6 +11,7 @@ import type { TransportMode } from '../../types/travelPlan';
 import { getItineraryTotals } from '../../features/itinerary/itinerary.service';
 import { addSavedCourse, planToCourse } from '../../features/saved-courses/savedCourses.store';
 import { requestRoute } from '../../features/routes/route.service';
+import { formatRouteCost } from '../../features/routes/routeCost.utils';
 import { loadGoogleMaps } from '../../features/map/googleMaps.loader';
 import styles from './ReviewPage.module.css';
 
@@ -37,7 +38,7 @@ export function ReviewPage() {
   }, [routeKey]);
   const schedule = useMemo(() => plan ? buildSchedule(plan) : [], [plan]); const warnings = useMemo(() => plan ? validateSchedule(plan) : [], [plan]);
   if (!plan) return null;
-  const { visitMinutes, travelMinutes, estimatedCost: cost } = getItineraryTotals(plan);
+  const { visitMinutes, travelMinutes, estimatedCost: cost, currency } = getItineraryTotals(plan);
   const savePlan = async () => { await save(); addSavedCourse(planToCourse(plan)); setSaved(true); };
   return (
     <>
@@ -53,7 +54,7 @@ export function ReviewPage() {
             <p className="hint">장소를 삭제하거나 순서를 바꾸고, 구간별 이동수단을 조정할 수 있습니다.</p>
             <div className={styles.summary}>
               <strong>{plan.spots.length}곳 · 총 {Math.floor((visitMinutes + travelMinutes) / 60)}시간 {(visitMinutes + travelMinutes) % 60}분</strong>
-              <span>체류 {visitMinutes}분 · 이동 {travelMinutes}분 · 예상 비용 {cost.toLocaleString()}원</span>
+              <span>체류 {visitMinutes}분 · 이동 {travelMinutes}분 · 예상 비용 {formatRouteCost(cost, currency)}</span>
             </div>
             {warnings.length > 0 && <div className={styles.warnings} role="status"><strong>일정 확인이 필요합니다</strong>{warnings.map((warning) => <p key={`${warning.spotId}-${warning.kind}`}>{warning.message}</p>)}</div>}
             <ol className={styles.timeline}>
@@ -79,9 +80,9 @@ export function ReviewPage() {
                     {index < plan.spots.length - 1 && (
                       <div className={styles.leg}>
                         <label className={styles.transport}>이동
-                          <select value={mode} onChange={(event) => setTransport(index, event.target.value as TransportMode)}>{Object.entries(transportLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+                          <select value={mode} onChange={(event) => { const nextMode = event.target.value as TransportMode; setTransport(index, nextMode); setRoute(index, null); }}>{Object.entries(transportLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
                         </label>
-                        <span className={styles.legInfo}>{route ? (route.error ? route.error : `${route.durationMinutes}분 · ${(route.distanceMeters / 1000).toFixed(1)}km${route.costNote ? ` · ${route.cost.toLocaleString()}원` : ''}`) : '경로 계산 중'}</span>
+                        <span className={styles.legInfo}>{route ? (route.error ? route.error : `${route.durationMinutes}분 · ${(route.distanceMeters / 1000).toFixed(1)}km${route.cost !== null && route.costNote ? ` · ${formatRouteCost(route.cost, route.costCurrency)}` : ''}`) : '경로 계산 중'}</span>
                       </div>
                     )}
                   </li>
@@ -100,4 +101,10 @@ export function ReviewPage() {
     </>
   );
 }
+
+
+
+
+
+
 

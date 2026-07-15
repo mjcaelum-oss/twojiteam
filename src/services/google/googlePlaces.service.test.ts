@@ -24,6 +24,7 @@ describe('searchTouristSpots', () => {
           types: ['historical_landmark'],
           photos: [{ getURI: () => 'https://images.example/palace.jpg' }],
           rating: 4.8,
+          priceRange: { startPrice: { currencyCode: 'KRW', units: 3000 } },
         },
       ],
     });
@@ -61,6 +62,7 @@ describe('searchTouristSpots', () => {
       photoUrl: 'https://images.example/palace.jpg',
       source: 'places',
       durationMinutes: 120,
+      feeAmount: 3000,
     });
   });
 });

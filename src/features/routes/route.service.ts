@@ -17,8 +17,8 @@ export async function requestRoute(origin: Spot, destination: Spot, mode: Transp
     if (!route) return { summary: { durationMinutes: 0, distanceMeters: 0, cost: 0, error: 'ZERO_RESULTS' } };
     const distanceMeters = route.legs.reduce((sum, leg) => sum + (leg.distance?.value ?? 0), 0);
     const durationMinutes = Math.ceil(route.legs.reduce((sum, leg) => sum + (leg.duration?.value ?? 0), 0) / 60);
-    const cost = estimateRouteCost(mode, distanceMeters, route.fare?.value);
-    return { summary: { durationMinutes, distanceMeters, cost: cost.amount, costNote: cost.note }, result };
+    const cost = estimateRouteCost(mode, distanceMeters, route.fare);
+    return { summary: { durationMinutes, distanceMeters, cost: cost.amount, costCurrency: cost.currency, costNote: cost.note }, result };
   } catch (error) {
     return { summary: { durationMinutes: 0, distanceMeters: 0, cost: 0, error: error instanceof Error ? error.message : 'ROUTE_REQUEST_FAILED' } };
   }
