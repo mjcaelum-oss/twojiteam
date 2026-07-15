@@ -13,13 +13,14 @@ export function SearchPage() {
   const navigate = useNavigate();
   const { setPlan } = useTravelPlan();
   const [destination, setDestination] = useState<{ name: string; latitude: number; longitude: number } | null>(null);
-  const [preferences, setPreferences] = useState<TravelPreferences>({ style: 'culture', pace: 'slow', companion: 'couple' });
+  const [preferences, setPreferences] = useState<Partial<TravelPreferences>>({});
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [startTime, setStartTime] = useState('09:00');
   const [partySize, setPartySize] = useState(2);
+  const ready = Boolean(destination && preferences.style && preferences.pace && preferences.companion);
   const submit = () => {
-    if (!destination) return;
-    setPlan({ id: crypto.randomUUID(), title: `${destination.name} 여행 계획`, destination, travelDate: date, startTime, preferences, partySize, spots: [], routes: [], status: 'draft' });
+    if (!destination || !preferences.style || !preferences.pace || !preferences.companion) return;
+    setPlan({ id: crypto.randomUUID(), title: `${destination.name} 여행 계획`, destination, travelDate: date, startTime, preferences: { style: preferences.style, pace: preferences.pace, companion: preferences.companion, notes: preferences.notes?.trim() || undefined }, partySize, spots: [], routes: [], status: 'draft' });
     navigate('/recommendations');
   };
   return (
@@ -44,7 +45,7 @@ export function SearchPage() {
           />
           <DestinationSearch value={destination ? destination.name : ''} onChange={setDestination} />
           <div className={styles.submit}>
-            <Button type="button" disabled={!destination} onClick={submit}>관광지 보기</Button>
+            <Button type="button" disabled={!ready} onClick={submit}>관광지 보기</Button>
           </div>
           <p className={styles.note}>지역 자동 매칭은 mock 좌표 기반이며, 관광지 데이터는 Google Places에서 실시간 조회합니다.</p>
         </section>

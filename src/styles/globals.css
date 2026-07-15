@@ -4,7 +4,7 @@ body { margin: 0; color: var(--ink); background: var(--soft); font: 15px/1.6 var
 .eyebrow { color: var(--brand-strong); font-size: .85rem; font-weight: 800; letter-spacing: .08em; }
 .site-header h1 { margin: .4rem 0; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.15; }
 .lede, .hint { margin: 0 0 1.25rem; color: var(--muted); }
-.progress { color: var(--brand-strong); font-weight: 800; font-size: .85rem; background: var(--blue-soft); border-radius: 999px; padding: .3rem .75rem; display: inline-block; }
+.progress { color: var(--brand-strong); font-weight: 800; font-size: .85rem; }
 h2 { margin: .4rem 0 .5rem; line-height: 1.25; }
 .button { min-height: 46px; padding: .7rem 1.3rem; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; transition: .15s; }
 .button-primary { border: 1px solid var(--brand); color: #fff; background: var(--brand); }

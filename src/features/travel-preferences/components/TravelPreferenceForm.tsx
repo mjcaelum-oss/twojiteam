@@ -3,18 +3,17 @@ import type { TravelPreferences } from '../../../types/travelPlan';
 import styles from './TravelPreferenceForm.module.css';
 
 export interface TravelPreferenceFormProps {
-  preferences: TravelPreferences;
+  preferences: Partial<TravelPreferences>;
   date: string;
   startTime: string;
   partySize: number;
-  onPreferencesChange: (value: TravelPreferences) => void;
+  onPreferencesChange: (value: Partial<TravelPreferences>) => void;
   onDateChange: (value: string) => void;
   onStartTimeChange: (value: string) => void;
   onPartySizeChange: (value: number) => void;
 }
 
 export function TravelPreferenceForm({ preferences, date, startTime, partySize, onPreferencesChange, onDateChange, onStartTimeChange, onPartySizeChange }: TravelPreferenceFormProps) {
-  const paceIndex = Math.max(0, paceOptions.findIndex((option) => option.value === preferences.pace));
   return (
     <div className={styles.form}>
       <section className={styles.section}>
@@ -28,8 +27,11 @@ export function TravelPreferenceForm({ preferences, date, startTime, partySize, 
 
       <section className={styles.section}>
         <div className={styles.qtitle}><span className={styles.qnum}>2</span> 여행 속도</div>
-        <input className={styles.slider} type="range" min={0} max={paceOptions.length - 1} step={1} value={paceIndex} aria-label="여행 속도" onChange={(event) => onPreferencesChange({ ...preferences, pace: paceOptions[Number(event.target.value)].value })} />
-        <div className={styles.sliderLabels}>{paceOptions.map((option, index) => <span key={option.value} className={index === paceIndex ? styles.active : ''}>{option.label}</span>)}</div>
+        <div className={styles.chips}>
+          {paceOptions.map((option) => (
+            <button key={option.value} type="button" aria-pressed={preferences.pace === option.value} className={`${styles.chip} ${preferences.pace === option.value ? styles.selected : ''}`} onClick={() => onPreferencesChange({ ...preferences, pace: option.value })}>{option.label}</button>
+          ))}
+        </div>
       </section>
 
       <section className={styles.section}>
@@ -48,6 +50,11 @@ export function TravelPreferenceForm({ preferences, date, startTime, partySize, 
           <label className={styles.field}>출발 시각<input type="time" value={startTime} onChange={(event) => onStartTimeChange(event.target.value)} /></label>
           <label className={styles.field}>인원수<input type="number" min={1} max={10} value={partySize} onChange={(event) => onPartySizeChange(Number(event.target.value))} /></label>
         </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.qtitle}><span className={styles.qnum}>5</span> 추가 여행 선호사항 <span className={styles.optional}>(선택)</span></div>
+        <textarea className={styles.textarea} rows={3} value={preferences.notes ?? ''} onChange={(event) => onPreferencesChange({ ...preferences, notes: event.target.value })} placeholder="예: 조용한 곳 위주로, 사진 찍기 좋은 장소 선호 등 (선택 입력, 비워두고 넘어가도 됩니다)" />
       </section>
     </div>
   );
