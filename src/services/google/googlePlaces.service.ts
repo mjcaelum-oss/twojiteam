@@ -26,7 +26,7 @@ function priceFor(place: google.maps.places.PlaceData): { amount: number; curren
 export async function searchTouristSpots(destination: Destination, radius = 10000): Promise<Spot[]> {
   await loadGoogleMaps();
   const library = await google.maps.importLibrary('places') as { Place: typeof google.maps.places.Place };
-  const { places = [] } = await library.Place.searchNearby({ fields: ['id', 'displayName', 'location', 'formattedAddress', 'googleMapsURI', 'types', 'photos', 'rating', 'userRatingCount', 'priceRange'], locationRestriction: { center: { lat: destination.latitude, lng: destination.longitude }, radius }, includedPrimaryTypes: types, maxResultCount: 10, rankPreference: 'POPULARITY' });
+  const { places = [] } = await library.Place.searchNearby({ fields: ['id', 'displayName', 'location', 'formattedAddress', 'googleMapsURI', 'types', 'photos', 'rating', 'userRatingCount', 'priceRange'], locationRestriction: { center: { lat: destination.latitude, lng: destination.longitude }, radius }, includedPrimaryTypes: types, maxResultCount: 20, rankPreference: 'POPULARITY' });
   const durationById = new Map<string, number>(places.flatMap((place) => place.id ? [[`place:${place.id}`, durationMinutesFor(place.types)] as const] : []));
   return places.flatMap((place): Spot[] => {
     if (!place.id || !place.displayName || !place.location) return [];

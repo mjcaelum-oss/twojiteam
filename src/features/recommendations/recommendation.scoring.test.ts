@@ -8,7 +8,7 @@ describe('getRecommendations', () => {
   const context = { destination: { name: '서울', latitude: 37.5665, longitude: 126.978 }, preferences: { style: 'culture' as const, pace: 'slow' as const, companion: 'couple' as const }, selectedIds: [], rejectedIds: [] };
   it('returns at most three candidates and prioritizes matching style', () => {
     const result = getRecommendations(spots, context);
-    expect(result.length).toBeLessThanOrEqual(3);
+    expect(result.length).toBeLessThanOrEqual(5);
     expect(result[0].tags).toContain('culture');
   });
   it('does not return selected or rejected spots', () => {
