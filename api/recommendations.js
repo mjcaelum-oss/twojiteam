@@ -31,16 +31,19 @@ export default async function handler(request, response) {
   try {
     const input = typeof request.body === 'string' ? JSON.parse(request.body) : request.body;
     if (!input?.destination || !input?.preferences || !Array.isArray(input.spots)) return sendJson(response, 400, { error: 'destination, preferences, and spots are required.' });
+    const time = input.recommendationTime ? input.recommendationTime.split(':').map(Number) : [];
+    const minutes = time.length >= 2 ? time[0] * 60 + time[1] : -1;
+    const mealTime = (minutes >= 660 && minutes <= 840) || (minutes >= 1020 && minutes <= 1260);
     const candidates = input.spots.filter((spot) => !input.selectedIds?.includes(spot.id) && !input.rejectedIds?.includes(spot.id))
-      .sort((a, b) => Number(b.category === input.preferences.style) - Number(a.category === input.preferences.style) || (b.popularity || 0) - (a.popularity || 0))
+      .sort((a, b) => (Number(mealTime && b.category === 'food') - Number(mealTime && a.category === 'food')) || Number(b.category === input.preferences.style) - Number(a.category === input.preferences.style) || (b.popularity || 0) - (a.popularity || 0))
       .slice(0, 20);
     const openAiResponse = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || 'gpt-5.6-luna',
-        instructions: 'Choose up to 3 travel spots only from the supplied candidates. Strongly prioritize candidates whose category matches preferences.style (for example, food means restaurants, cafes, and bakeries). Respect destination, travel style, pace, companion, selectedIds, rejectedIds, and previousSpotId. Never invent spot IDs. Return concise Korean reasons.',
-        input: JSON.stringify({ destination: input.destination, preferences: input.preferences, selectedIds: input.selectedIds || [], rejectedIds: input.rejectedIds || [], previousSpotId: input.previousSpotId || null, spots: candidates }),
+        instructions: 'Choose up to 3 travel spots only from the supplied candidates. Strongly prioritize candidates whose category matches preferences.style. During 11:00-14:00 or 17:00-21:00, strongly prioritize food candidates such as restaurants, cafes, and bakeries because it is likely a meal time. Respect destination, travel style, pace, companion, selectedIds, rejectedIds, and previousSpotId. Never invent spot IDs. Return concise Korean reasons.',
+        input: JSON.stringify({ destination: input.destination, preferences: input.preferences, recommendationTime: input.recommendationTime || null, selectedIds: input.selectedIds || [], rejectedIds: input.rejectedIds || [], previousSpotId: input.previousSpotId || null, spots: candidates }),
         text: { format: { type: 'json_schema', name: 'travel_recommendations', strict: true, schema: recommendationSchema } }
       })
     });

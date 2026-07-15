@@ -17,4 +17,8 @@ describe('schedule validation', () => {
     const closedDatePlan = { ...plan, spots: [{ ...plan.spots[0], spot: { ...spot, openingHours: { weekly: {}, closedDates: ['2026-07-14'] } } }], routes: [] };
     expect(validateSchedule(closedDatePlan)).toHaveLength(1);
   });
+  it('starts each new travel day at 09:00', () => {
+    const multiDayPlan = { ...plan, spots: [{ ...plan.spots[0], travelDate: '2026-07-14' }, { ...plan.spots[1], travelDate: '2026-07-15' }], routes: [null] };
+    expect(buildSchedule(multiDayPlan)[1].arrival.toTimeString()).toContain('09:00');
+  });
 });
