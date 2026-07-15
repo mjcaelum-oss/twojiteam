@@ -11,7 +11,8 @@ declare namespace google.maps {
   function importLibrary(name: string): Promise<Record<string, unknown>>;
 }
 declare namespace google.maps.places {
-  interface PlaceData { id?: string; displayName?: string; location?: google.maps.LatLng; formattedAddress?: string; googleMapsURI?: string; types?: string[]; rating?: number; userRatingCount?: number; }
+  interface PlacePhoto { getURI(options?: { maxWidth?: number; maxHeight?: number }): string; }
+  interface PlaceData { id?: string; displayName?: string; location?: google.maps.LatLng; formattedAddress?: string; googleMapsURI?: string; types?: string[]; photos?: PlacePhoto[]; rating?: number; userRatingCount?: number; }
   class Place { static searchNearby(request: Record<string, unknown>): Promise<{ places?: PlaceData[] }>; }
 }
 interface Window { initTravelPickMap?: () => void; gm_authFailure?: () => void; }

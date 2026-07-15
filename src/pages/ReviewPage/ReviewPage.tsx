@@ -45,7 +45,7 @@ export function ReviewPage() {
                   <li key={item.spot.id}>
                     <div className={styles.ticket}>
                       <div className={styles.index}>{index + 1}</div>
-                      <div className={styles.thumb} aria-hidden="true">{item.spot.name.trim().charAt(0)}</div>
+                      <div className={styles.thumb}>{item.spot.photoUrl ? <img src={item.spot.photoUrl} alt="" /> : item.spot.name.trim().charAt(0)}</div>
                       <div className={styles.ticketBody}>
                         <strong>{item.spot.name}</strong>
                         <span>{item.spot.region} · {item.spot.feeAmount ? `${item.spot.feeAmount.toLocaleString()}원` : item.spot.feeNote} · {item.spot.durationMinutes}분</span>

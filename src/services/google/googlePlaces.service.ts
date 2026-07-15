@@ -12,11 +12,11 @@ function categoryFor(placeTypes: string[] = []): Spot['category'] {
 export async function searchTouristSpots(destination: Destination, radius = 10000): Promise<Spot[]> {
   await loadGoogleMaps();
   const library = await google.maps.importLibrary('places') as { Place: typeof google.maps.places.Place };
-  const { places = [] } = await library.Place.searchNearby({ fields: ['id', 'displayName', 'location', 'formattedAddress', 'googleMapsURI', 'types', 'rating', 'userRatingCount'], locationRestriction: { center: { lat: destination.latitude, lng: destination.longitude }, radius }, includedPrimaryTypes: types, maxResultCount: 10, rankPreference: 'POPULARITY' });
+  const { places = [] } = await library.Place.searchNearby({ fields: ['id', 'displayName', 'location', 'formattedAddress', 'googleMapsURI', 'types', 'photos', 'rating', 'userRatingCount'], locationRestriction: { center: { lat: destination.latitude, lng: destination.longitude }, radius }, includedPrimaryTypes: types, maxResultCount: 10, rankPreference: 'POPULARITY' });
   return places.flatMap((place): Spot[] => {
     if (!place.id || !place.displayName || !place.location) return [];
 
     const category = categoryFor(place.types);
-    return [{ id: `place:${place.id}`, name: place.displayName, region: place.formattedAddress ?? destination.name, latitude: place.location.lat(), longitude: place.location.lng(), category, tags: [category, 'balanced'], description: `${destination.name}에서 찾은 Google Places 관광지`, feeAmount: 0, feeNote: '현장 확인 필요', durationMinutes: 90, openingHours: { weekly: {} }, popularity: Math.min(1, (place.rating ?? 0) / 5), source: 'places', sourceUrl: place.googleMapsURI, lastVerifiedAt: new Date().toISOString() }];
+    return [{ id: `place:${place.id}`, name: place.displayName, region: place.formattedAddress ?? destination.name, latitude: place.location.lat(), longitude: place.location.lng(), category, tags: [category, 'balanced'], description: `${destination.name}에서 찾은 Google Places 관광지`, photoUrl: place.photos?.[0]?.getURI({ maxWidth: 800, maxHeight: 500 }), feeAmount: 0, feeNote: '현장 확인 필요', durationMinutes: 90, openingHours: { weekly: {} }, popularity: Math.min(1, (place.rating ?? 0) / 5), source: 'places', sourceUrl: place.googleMapsURI, lastVerifiedAt: new Date().toISOString() }];
   });
 }

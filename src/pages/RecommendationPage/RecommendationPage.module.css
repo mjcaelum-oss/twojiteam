@@ -9,4 +9,12 @@
 .selected h3 { margin: 0 0 .5rem; font-size: 1rem; }
 .selected ol { margin: 0; padding-left: 1.3rem; color: var(--muted); }
 .selected p { color: var(--muted); }
+.transportChoice { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
+.transportChoice h3 { margin: 0 0 .35rem; font-size: 1rem; }
+.transportOptions { display: grid; gap: .55rem; }
+.transportOption { display: grid; grid-template-columns: 1fr auto; gap: .15rem .6rem; padding: .7rem .8rem; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); text-align: left; cursor: pointer; }
+.transportOption span, .transportOption small { color: var(--muted); font-size: .82rem; }
+.transportOption small { grid-column: 1 / -1; }
+.transportSelected { border-color: var(--brand); background: var(--blue-soft); box-shadow: 0 0 0 2px rgba(59, 130, 246, .14); }
+.transportOption:disabled { cursor: wait; opacity: .65; }
 @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .mapCol { position: static; } }

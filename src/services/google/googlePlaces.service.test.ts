@@ -22,6 +22,7 @@ describe('searchTouristSpots', () => {
           formattedAddress: '서울특별시 종로구',
           googleMapsURI: 'https://maps.google.com/?cid=palace-id',
           types: ['historical_landmark'],
+          photos: [{ getURI: () => 'https://images.example/palace.jpg' }],
           rating: 4.8,
         },
       ],
@@ -57,6 +58,7 @@ describe('searchTouristSpots', () => {
       latitude: 37.5796,
       longitude: 126.977,
       category: 'culture',
+      photoUrl: 'https://images.example/palace.jpg',
       source: 'places',
     });
   });
