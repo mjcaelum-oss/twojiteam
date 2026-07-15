@@ -9,7 +9,10 @@ export interface OpenAIRecommendationInput { destination: Destination; preferenc
 
 export async function requestOpenAIRecommendations(input: OpenAIRecommendationInput): Promise<OpenAIRecommendationResponse> {
   const response = await fetch(env.openAIRecommendationUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input) });
-  if (!response.ok) throw new Error(`OpenAI 추천 요청에 실패했습니다 (${response.status}).`);
+  if (!response.ok) {
+    const body = await response.json().catch(() => null) as { error?: string } | null;
+    throw new Error(body?.error || `OpenAI 추천 요청에 실패했습니다 (${response.status}).`);
+  }
   const result: unknown = await response.json();
   if (!result || typeof result !== 'object' || !Array.isArray((result as OpenAIRecommendationResponse).recommendations)) throw new Error('OpenAI 추천 응답 형식이 올바르지 않습니다.');
   return result as OpenAIRecommendationResponse;

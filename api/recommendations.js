@@ -32,11 +32,12 @@ export default async function handler(request, response) {
     const input = typeof request.body === 'string' ? JSON.parse(request.body) : request.body;
     if (!input?.destination || !input?.preferences || !Array.isArray(input.spots)) return sendJson(response, 400, { error: 'destination, preferences, and spots are required.' });
     const candidates = input.spots.filter((spot) => !input.selectedIds?.includes(spot.id) && !input.rejectedIds?.includes(spot.id)).slice(0, 20);
+    if (!candidates.length) return sendJson(response, 200, { recommendations: [] });
     const openAiResponse = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'gpt-5.6-luna',
+        model: process.env.OPENAI_MODEL || 'gpt-5.6-luna',
         instructions: 'Choose up to 3 travel spots only from the supplied candidates. Respect destination, travel style, pace, companion, selectedIds, rejectedIds, and previousSpotId. Never invent spot IDs. Return concise Korean reasons.',
         input: JSON.stringify({ destination: input.destination, preferences: input.preferences, selectedIds: input.selectedIds || [], rejectedIds: input.rejectedIds || [], previousSpotId: input.previousSpotId || null, spots: candidates }),
         text: { format: { type: 'json_schema', name: 'travel_recommendations', strict: true, schema: recommendationSchema } }
