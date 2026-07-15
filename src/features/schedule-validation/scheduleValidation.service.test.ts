@@ -9,4 +9,12 @@ const plan: TravelPlan = { id: 'test', title: 'test', destination: { name: 'ì„œì
 describe('schedule validation', () => {
   it('calculates arrival and departure in order', () => { const result = buildSchedule(plan); expect(result).toHaveLength(2); expect(result[1].arrival.getTime()).toBeGreaterThan(result[0].departure.getTime()); });
   it('warns when a place is near closing time', () => { expect(validateSchedule(plan).length).toBeGreaterThan(0); });
+  it('does not treat missing opening hours as a closed place', () => {
+    const unknownHoursPlan = { ...plan, spots: [{ ...plan.spots[0], spot: { ...spot, openingHours: { weekly: {} } } }], routes: [] };
+    expect(validateSchedule(unknownHoursPlan)).toEqual([]);
+  });
+  it('warns for an explicitly closed date', () => {
+    const closedDatePlan = { ...plan, spots: [{ ...plan.spots[0], spot: { ...spot, openingHours: { weekly: {}, closedDates: ['2026-07-14'] } } }], routes: [] };
+    expect(validateSchedule(closedDatePlan)).toHaveLength(1);
+  });
 });

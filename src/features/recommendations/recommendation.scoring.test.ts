@@ -15,4 +15,9 @@ describe('getRecommendations', () => {
     const result = getRecommendations(spots, { ...context, selectedIds: ['seoul-gyeongbokgung'], rejectedIds: ['seoul-bukchon'] });
     expect(result.some((spot) => ['seoul-gyeongbokgung', 'seoul-bukchon'].includes(spot.id))).toBe(false);
   });
+
+  it('prioritizes the selected food preference by category', () => {
+    const result = getRecommendations(spots.map((spot) => spot.id === 'cafe' ? { ...spot, category: 'food', tags: ['food'] } : spot), { ...context, preferences: { ...context.preferences, style: 'food' } });
+    expect(result[0].category).toBe('food');
+  });
 });

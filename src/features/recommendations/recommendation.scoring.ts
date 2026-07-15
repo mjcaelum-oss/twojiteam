@@ -14,7 +14,7 @@ export function scoreSpot(spot: Spot, context: RecommendationContext): ScoredSpo
   const anchor = context.previous ?? context.destination;
   const km = distanceKm(anchor, spot);
   const estimatedMinutes = km * 3 + 5;
-  const style = spot.tags.includes(context.preferences.style) ? 5 : 0;
+  const style = spot.category === context.preferences.style || spot.tags.includes(context.preferences.style) ? 8 : 0;
   const companion = spot.tags.includes(context.preferences.companion) ? 2 : 0;
   const popularity = spot.popularity * 2;
   const distancePenalty = Math.min(1, estimatedMinutes / maxLegMinutes[context.preferences.pace]) * 6;

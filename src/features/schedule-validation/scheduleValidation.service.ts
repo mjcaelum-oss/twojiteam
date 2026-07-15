@@ -17,10 +17,11 @@ export function buildSchedule(plan: TravelPlan): ScheduleItem[] {
 export function validateSchedule(plan: TravelPlan): ScheduleWarning[] {
   return buildSchedule(plan).flatMap<ScheduleWarning>(({ spot, arrival }) => {
     const hours = spot.openingHours.weekly[arrival.getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6];
-    if (!hours) return [{ spotId: spot.id, kind: 'closed' as const, message: `${spot.name}은(는) 해당 요일에 운영하지 않습니다.` }];
+    if (spot.openingHours.closedDates?.includes(plan.travelDate) || hours === null) return [{ spotId: spot.id, kind: 'closed' as const, message: `${spot.name}은(는) 해당 날짜에 휴무입니다.` }];
+    if (!hours) return [];
     const close = atMinutes(arrival, hours.close);
-    if (arrival >= close) return [{ spotId: spot.id, kind: 'after-close' as const, message: `${spot.name} 도착 예상이 마감 시간 이후입니다.` }];
-    if (close.getTime() - arrival.getTime() <= 60 * 60000) return [{ spotId: spot.id, kind: 'near-close' as const, message: `${spot.name} 마감까지 1시간 이내입니다.` }];
+    if (arrival >= close) return [{ spotId: spot.id, kind: 'after-close' as const, message: `${spot.name}은(는) 도착 예정 시간이 영업 종료 후입니다.` }];
+    if (close.getTime() - arrival.getTime() <= 60 * 60000) return [{ spotId: spot.id, kind: 'near-close' as const, message: `${spot.name}은(는) 영업 종료까지 1시간 이내입니다.` }];
     return [];
   });
 }

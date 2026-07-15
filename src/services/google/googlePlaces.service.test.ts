@@ -60,6 +60,7 @@ describe('searchTouristSpots', () => {
       category: 'culture',
       photoUrl: 'https://images.example/palace.jpg',
       source: 'places',
+      durationMinutes: 120,
     });
   });
 });

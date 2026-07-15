@@ -27,7 +27,6 @@ export function RecommendationPage() {
   const [liked, setLiked] = useLocalStorage<LikedSpot[]>(LIKED_KEY, seedLikedSpots);
   const toggleLike = (spot: ScoredSpot) => setLiked((list) => toggleLikedSpot(list, { id: spot.id, name: spot.name, region: spot.region }));
   const choose = (spot: ScoredSpot) => { setCurrent(spot); addSpot(spot); };
-  const reject = (spot: ScoredSpot) => { setRejected((ids) => ids.includes(spot.id) ? ids : [...ids, spot.id]); if (current?.id === spot.id) setCurrent(undefined); };
   const legIndex = plan ? plan.spots.length - 2 : -1;
   const origin = legIndex >= 0 && plan ? plan.spots[legIndex].spot : undefined;
   const destination = legIndex >= 0 && plan ? plan.spots[legIndex + 1].spot : undefined;
@@ -52,7 +51,6 @@ export function RecommendationPage() {
   const mapColors = useMemo(() => new Map([...plan?.spots.map((item) => item.spot) ?? [], ...candidates].map((spot, index) => [spot.id, getSpotColor(index)])), [plan?.spots, candidates]);
   const mapRoutes = plan ? plan.spots.slice(0, -1).map((item, index) => ({ origin: item.spot, destination: plan.spots[index + 1].spot, mode: plan.spots[index + 1].transportMode ?? 'DRIVING' as TransportMode, departureTime: buildSchedule(plan)[index]?.departure, result: index === legIndex ? routeOptions[mode]?.result : undefined })).filter((_, index) => index !== legIndex || !awaitingTransport) : [];
   if (!plan) return null;
-  const finish = () => { if (current) addSpot(current); navigate('/review'); };
   return (
     <>
       <Header />
@@ -75,7 +73,7 @@ export function RecommendationPage() {
                     const route = routeOptions[transport];
                     return <button key={transport} type="button" className={`${styles.transportOption} ${mode === transport ? styles.transportSelected : ''}`} onClick={() => chooseTransport(transport)} disabled={!route || Boolean(route.summary.error)} aria-pressed={mode === transport}>
                       <strong>{transportLabels[transport]}</strong>
-                      <span>{route?.summary.error ? `경로 계산 실패: ${route.summary.error}` : route ? `${route.summary.durationMinutes}분 · ${route.summary.cost.toLocaleString()}원` : '계산 중...'}</span>
+                      <span>{route?.summary.error ? `경로 계산 실패: ${route.summary.error}` : route ? `${route.summary.durationMinutes}분${route.summary.costNote ? ` · ${route.summary.cost.toLocaleString()}원` : ''}` : '계산 중...'}</span>
                       {route?.summary.costNote && <small>{route.summary.costNote}</small>}
                     </button>;
                   })}
@@ -106,3 +104,5 @@ export function RecommendationPage() {
     </>
   );
 }
+
+

@@ -81,7 +81,7 @@ export function ReviewPage() {
                         <label className={styles.transport}>이동
                           <select value={mode} onChange={(event) => setTransport(index, event.target.value as TransportMode)}>{Object.entries(transportLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
                         </label>
-                        <span className={styles.legInfo}>{route ? (route.error ? route.error : `${route.durationMinutes}분 · ${(route.distanceMeters / 1000).toFixed(1)}km · ${route.cost.toLocaleString()}원`) : '경로 계산 전'}</span>
+                        <span className={styles.legInfo}>{route ? (route.error ? route.error : `${route.durationMinutes}분 · ${(route.distanceMeters / 1000).toFixed(1)}km${route.costNote ? ` · ${route.cost.toLocaleString()}원` : ''}`) : '경로 계산 중'}</span>
                       </div>
                     )}
                   </li>
@@ -100,3 +100,4 @@ export function ReviewPage() {
     </>
   );
 }
+
