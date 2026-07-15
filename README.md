@@ -30,7 +30,7 @@ npm run dev
 | `VITE_TOUR_API_ENABLED` | 관광 API 사용 여부 | 공개 가능 |
 | `VITE_API_BASE_URL` | 서버/Edge Function 주소 | 공개 가능 |
 | `OPENAI_API_KEY` | Vercel Function에서 OpenAI 호출 | 서버 전용 |
-| `OPENAI_MODEL` | OpenAI 모델, 기본값 `gpt-4.1-mini` | 서버 전용 설정 |
+| `OPENAI_MODEL` | OpenAI 모델, 기본값 `gpt-5.6-luna` | 서버 전용 설정 |
 
 서비스 역할 키, TourAPI 비밀키 등 서버 전용 키는 `VITE_` 변수에 넣지 않습니다.
 

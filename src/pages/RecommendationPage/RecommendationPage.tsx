@@ -23,14 +23,13 @@ export function RecommendationPage() {
   const choose = (spot: ScoredSpot) => { setCurrent(spot); };
   const reject = (spot: ScoredSpot) => { setRejected((ids) => [...ids, spot.id]); if (current?.id === spot.id) setCurrent(undefined); };
   if (!plan) return null;
-  const finish = () => { if (current) addSpot(current); navigate('/review'); };
   return (
     <>
       <Header />
       <PageContainer className={styles.page}>
         <div className={styles.layout}>
           <div className={styles.mapCol}>
-            <TravelMap spots={candidates} selected={plan.spots.map((item) => item.spot)} current={current} onError={setError} />
+            <TravelMap spots={candidates} selected={plan.spots.map((item) => item.spot)} onError={setError} />
           </div>
           <section className={styles.panel} aria-live="polite">
             <div className="progress">{plan.spots.length + 1}번째 추천</div>
@@ -44,7 +43,6 @@ export function RecommendationPage() {
             )}
             <div className={styles.actions}>
               <Button variant="secondary" type="button" onClick={() => navigate('/')}>처음부터</Button>
-              <Button type="button" disabled={!current} onClick={finish}>이 장소 선택</Button>
               <Button variant="secondary" type="button" disabled={!plan.spots.length} onClick={() => navigate('/review')}>계획 검토</Button>
             </div>
             <div className={styles.selected}>
