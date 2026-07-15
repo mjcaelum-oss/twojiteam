@@ -9,6 +9,9 @@
 
 .timeline { list-style: none; margin: 1.25rem 0; padding: 0; }
 .ticket { position: relative; display: flex; gap: .9rem; align-items: flex-start; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: .9rem 1rem; box-shadow: var(--shadow); }
+.timeline li[draggable="true"] { cursor: grab; }
+.timeline li[aria-grabbed="true"] { opacity: .55; }
+.dragHandle { flex: none; color: var(--muted); font-size: 1.35rem; line-height: 30px; cursor: grab; user-select: none; }
 .ticket::before, .ticket::after { content: ""; position: absolute; top: 50%; width: 16px; height: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; transform: translateY(-50%); }
 .ticket::before { left: -9px; }
 .ticket::after { right: -9px; }

@@ -10,11 +10,31 @@ import { buildSchedule, validateSchedule } from '../../features/schedule-validat
 import type { TransportMode } from '../../types/travelPlan';
 import { getItineraryTotals } from '../../features/itinerary/itinerary.service';
 import { addSavedCourse, planToCourse } from '../../features/saved-courses/savedCourses.store';
+import { requestRoute } from '../../features/routes/route.service';
+import { loadGoogleMaps } from '../../features/map/googleMaps.loader';
 import styles from './ReviewPage.module.css';
 
 export function ReviewPage() {
-  const navigate = useNavigate(); const { plan, setPlan, removeSpot, moveSpot, setTransport, save } = useTravelPlan(); const [saved, setSaved] = useState(false);
+  const navigate = useNavigate(); const { plan, setPlan, removeSpot, reorderSpot, setTransport, setRoute, save } = useTravelPlan(); const [saved, setSaved] = useState(false); const [draggedId, setDraggedId] = useState<string | null>(null);
   useEffect(() => { if (!plan || !plan.spots.length) navigate('/'); }, [navigate, plan]);
+  const routeKey = plan?.spots.slice(0, -1).map((item, index) => `${item.spot.id}:${plan.spots[index + 1].spot.id}:${plan.spots[index + 1].transportMode ?? 'DRIVING'}`).join('|') ?? '';
+  useEffect(() => {
+    if (!plan || plan.spots.length < 2) return;
+    let active = true;
+    void loadGoogleMaps().then(async () => {
+      let workingPlan = plan;
+      for (const [index, item] of plan.spots.slice(0, -1).entries()) {
+        const departureTime = buildSchedule(workingPlan)[index]?.departure;
+        const route = await requestRoute(item.spot, workingPlan.spots[index + 1].spot, workingPlan.spots[index + 1].transportMode ?? 'DRIVING', departureTime);
+        if (!active) return;
+        setRoute(index, route.summary);
+        workingPlan = { ...workingPlan, routes: workingPlan.routes.map((current, routeIndex) => routeIndex === index ? route.summary : current) };
+      }
+    });
+    return () => { active = false; };
+  // Route recalculation is keyed by ordered spot ids and transport modes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routeKey]);
   const schedule = useMemo(() => plan ? buildSchedule(plan) : [], [plan]); const warnings = useMemo(() => plan ? validateSchedule(plan) : [], [plan]);
   if (!plan) return null;
   const { visitMinutes, travelMinutes, estimatedCost: cost } = getItineraryTotals(plan);
@@ -25,7 +45,7 @@ export function ReviewPage() {
       <PageContainer className={styles.page}>
         <div className={styles.layout}>
           <div className={styles.mapCol}>
-            <TravelMap spots={[]} selected={plan.spots.map((item) => item.spot)} routes={plan.spots.slice(0, -1).map((item, index) => ({ origin: item.spot, destination: plan.spots[index + 1].spot, mode: plan.spots[index + 1].transportMode ?? 'DRIVING' }))} />
+            <TravelMap spots={[]} selected={plan.spots.map((item) => item.spot)} routes={plan.spots.slice(0, -1).map((item, index) => ({ origin: item.spot, destination: plan.spots[index + 1].spot, mode: plan.spots[index + 1].transportMode ?? 'DRIVING', departureTime: schedule[index]?.departure }))} />
           </div>
           <section className={styles.panel}>
             <div className="progress">TRAVEL PLAN</div>
@@ -42,8 +62,9 @@ export function ReviewPage() {
                 const route = plan.routes[index];
                 const mode = item.transportMode ?? 'DRIVING';
                 return (
-                  <li key={item.spot.id}>
-                    <div className={styles.ticket}>
+                  <li key={item.spot.id} draggable onDragStart={() => setDraggedId(item.spot.id)} onDragOver={(event) => event.preventDefault()} onDrop={() => { if (draggedId) reorderSpot(draggedId, index); setDraggedId(null); }} onDragEnd={() => setDraggedId(null)} aria-grabbed={draggedId === item.spot.id}>
+                      <div className={styles.ticket}>
+                      <div className={styles.dragHandle} aria-label="드래그하여 방문 순서 변경">⠿</div>
                       <div className={styles.index}>{index + 1}</div>
                       <div className={styles.thumb}>{item.spot.photoUrl ? <img src={item.spot.photoUrl} alt="" /> : item.spot.name.trim().charAt(0)}</div>
                       <div className={styles.ticketBody}>
@@ -51,8 +72,6 @@ export function ReviewPage() {
                         <span>{item.spot.region} · {item.spot.feeAmount ? `${item.spot.feeAmount.toLocaleString()}원` : item.spot.feeNote} · {item.spot.durationMinutes}분</span>
                         <small>{itemSchedule?.arrival.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} 도착 예상</small>
                         <div className={styles.itemActions}>
-                          <Button variant="secondary" type="button" onClick={() => moveSpot(item.spot.id, -1)} disabled={index === 0}>위로</Button>
-                          <Button variant="secondary" type="button" onClick={() => moveSpot(item.spot.id, 1)} disabled={index === plan.spots.length - 1}>아래로</Button>
                           <Button variant="secondary" type="button" onClick={() => removeSpot(item.spot.id)}>삭제</Button>
                         </div>
                       </div>

@@ -7,7 +7,7 @@ export function loadGoogleMaps(): Promise<void> {
   if (loading) return loading;
   loading = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(env.googleMapsApiKey)}&libraries=places&loading=async&callback=initTravelPickMap&language=ko&region=KR`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(env.googleMapsApiKey)}&libraries=places&loading=async&callback=initTravelPickMap&language=ko`;
     script.async = true;
     script.onerror = () => reject(new Error('Google Maps JavaScript API를 불러오지 못했습니다.'));
     window.initTravelPickMap = resolve;

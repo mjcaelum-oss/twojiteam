@@ -3,4 +3,7 @@
 .status { position: absolute; inset: 1rem; display: grid; place-items: center; padding: 2rem; text-align: center; color: var(--muted); background: var(--blue-soft); border-radius: var(--radius-md); }
 .status[hidden] { display: none; }
 .legend { position: absolute; left: 1.5rem; bottom: 1.5rem; padding: .55rem .75rem; border-radius: 10px; color: var(--brand-strong); background: #fff; box-shadow: var(--shadow); font-size: .9rem; font-weight: 700; }
+.routeLegend { position: absolute; right: 1.5rem; bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: .45rem; max-width: 70%; padding: .55rem .7rem; border-radius: 10px; background: #fff; box-shadow: var(--shadow); font-size: .78rem; }
+.routeLegend span { display: inline-flex; align-items: center; gap: .25rem; color: var(--muted); font-weight: 700; }
+.routeLegend i { width: 14px; height: 4px; border-radius: 999px; }
 @media (max-width: 760px) { .panel { min-height: 430px; } .map { min-height: 398px; } }
