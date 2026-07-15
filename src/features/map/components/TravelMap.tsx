@@ -13,7 +13,7 @@ export function TravelMap({ spots, selected, current, routes = [], onError }: { 
   const mapSpots = useMemo(() => [...selected, ...spots.filter((spot) => !selected.some((item) => item.id === spot.id))], [selected, spots]);
   const routeKey = routes.map(({ origin, destination, mode, result }) => `${origin.id}:${destination.id}:${mode}:${Boolean(result)}`).join('|');
   useEffect(() => { let active = true; void loadGoogleMaps().then(() => { if (!active || !element.current) return; map.current = new google.maps.Map(element.current, { center: { lat: 36.35, lng: 127.8 }, zoom: 7 }); setReady(true); }).catch((error) => onError?.(error instanceof Error ? error.message : '지도를 불러오지 못했습니다.')); return () => { active = false; directions.current.forEach((renderer) => renderer.setMap(null)); clearMarkers(markers.current); }; }, [onError]);
-  useEffect(() => { if (!map.current || !ready) return; clearMarkers(markers.current); markers.current = createMarkers(map.current, mapSpots); if (mapSpots.length > 1) { const bounds = new google.maps.LatLngBounds(); mapSpots.forEach((spot) => bounds.extend({ lat: spot.latitude, lng: spot.longitude })); map.current.fitBounds(bounds); } }, [ready, mapSpots]);
+  useEffect(() => { if (!map.current || !ready) return; clearMarkers(markers.current); markers.current = createMarkers(map.current, mapSpots); fitMapToSpots(map.current, mapSpots); }, [ready, mapSpots]);
   useEffect(() => {
     if (!map.current || !ready) return;
     let active = true;
