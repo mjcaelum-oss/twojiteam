@@ -1,4 +1,5 @@
 import type { ScoredSpot } from '../recommendation.types';
+import { Button } from '../../../components/common/Button/Button';
 import styles from './RecommendationCard.module.css';
 
 const clockIcon = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>;
@@ -26,12 +27,16 @@ export function RecommendationCard({ spot, selected, liked = false, onSelect, on
           </span>
         </div>
         <div className={styles.info}>
-          <div className={styles.titleRow}>{spot.name}</div>
-          <p className={styles.desc}>{spot.region} · {spot.description}</p>
+          <div className={styles.titleRow}>{spot.name}{selected && <span aria-hidden="true">✓</span>}</div>
+          <div className={styles.region}>{spot.region}</div>
           {spot.tags.length > 0 && <div className={styles.tags}>{spot.tags.slice(0, 3).map((tag) => <span key={tag} className={styles.tag}>#{tag}</span>)}</div>}
+          <p className={styles.desc}>{spot.description}</p>
           {spot.reason && <p className={styles.reason}>{spot.reason}</p>}
         </div>
       </button>
+      <div className={styles.actions}>
+        <Button variant="secondary" type="button" onClick={onReject}>다음 후보로</Button>
+      </div>
     </article>
   );
 }

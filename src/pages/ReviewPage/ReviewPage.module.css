@@ -1,6 +1,6 @@
 .page { padding-bottom: 3rem; }
 .layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); gap: 1rem; align-items: start; }
-.mapCol { position: sticky; top: 76px; align-self: start; }
+.mapCol { position: sticky; top: 104px; align-self: start; }
 .panel { padding: 1.5rem; background: #fff; border: 1px solid var(--line); border-radius: var(--radius-xl); box-shadow: var(--shadow); }
 .summary { display: grid; gap: .25rem; padding: 1rem; border-radius: 12px; background: var(--blue-soft); }
 .summary span { color: var(--muted); }
