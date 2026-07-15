@@ -27,6 +27,7 @@ export function RecommendationPage() {
   const [liked, setLiked] = useLocalStorage<LikedSpot[]>(LIKED_KEY, seedLikedSpots);
   const toggleLike = (spot: ScoredSpot) => setLiked((list) => toggleLikedSpot(list, { id: spot.id, name: spot.name, region: spot.region }));
   const choose = (spot: ScoredSpot) => { setCurrent(spot); addSpot(spot); };
+  const reject = (spot: ScoredSpot) => { setRejected((ids) => ids.includes(spot.id) ? ids : [...ids, spot.id]); if (current?.id === spot.id) setCurrent(undefined); };
   const legIndex = plan ? plan.spots.length - 2 : -1;
   const origin = legIndex >= 0 && plan ? plan.spots[legIndex].spot : undefined;
   const destination = legIndex >= 0 && plan ? plan.spots[legIndex + 1].spot : undefined;
@@ -93,8 +94,7 @@ export function RecommendationPage() {
             </>}
             <div className={styles.actions}>
               <Button variant="secondary" type="button" onClick={() => navigate('/')}>처음부터</Button>
-              <Button type="button" disabled={!current} onClick={finish}>이 장소 선택</Button>
-              <Button variant="secondary" type="button" disabled={!plan.spots.length} onClick={() => navigate('/review')}>계획 검토</Button>
+              <Button type="button" disabled={!plan.spots.length || awaitingTransport} onClick={() => navigate('/review')}>계획 수립 완료</Button>
             </div>
             <div className={styles.selected}>
               <h3>내 여행 목록</h3>
