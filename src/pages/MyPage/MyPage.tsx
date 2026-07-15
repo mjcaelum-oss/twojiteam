@@ -73,16 +73,14 @@ export function MyPage() {
             <div className={styles.grid}>
               {liked.map((spot) => (
                 <div key={spot.id} className={styles.likeCard}>
-                  <div className={styles.likeLeft}>
-                    <span className={styles.likeThumb} aria-hidden="true">{spot.name.trim().charAt(0)}</span>
-                    <div className={styles.likeText}>
-                      <div className={styles.likeName}>{spot.name}</div>
-                      <div className={styles.likeRegion}>{spot.region}</div>
-                    </div>
-                  </div>
                   <div className={styles.likeActions}>
                     <button type="button" className={styles.likedBtn} aria-label="찜 해제" onClick={() => removeLiked(spot.id)}>{heartIcon}</button>
                     <button type="button" className={styles.iconBtn} aria-label="공유" onClick={() => share('/')}>{shareIcon}</button>
+                  </div>
+                  <div className={styles.likeThumb} aria-hidden="true">{spot.name.trim().charAt(0)}</div>
+                  <div className={styles.likeBody}>
+                    <div className={styles.likeName}>{spot.name}</div>
+                    <div className={styles.likeRegion}>{spot.region}</div>
                   </div>
                 </div>
               ))}

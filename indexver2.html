@@ -267,9 +267,10 @@
 
       <div class="q-section">
         <div class="q-title"><span class="q-num">2</span> 여행 속도</div>
-        <div class="pace">
-          <input type="range" id="pace-slider" min="0" max="2" step="1" value="1" aria-label="여행 속도">
-          <div class="pace-labels" id="pace-labels"><span data-idx="0">느긋하게</span><span data-idx="1" class="active">보통</span><span data-idx="2">빡빡하게</span></div>
+        <div class="chips" id="pace-chips">
+          <button class="chip" type="button" data-value="slow">느긋하게</button>
+          <button class="chip" type="button" data-value="balanced">보통</button>
+          <button class="chip" type="button" data-value="fast">빡빡하게</button>
         </div>
       </div>
 
@@ -551,18 +552,19 @@
     $('style-chips').addEventListener('click', e=>{ const c=e.target.closest('.chip'); if(!c) return; c.classList.toggle('selected'); validateSelect(); });
     $('companion-chips').addEventListener('click', e=>{ const c=e.target.closest('.chip'); if(!c) return;
       $('companion-chips').querySelectorAll('.chip').forEach(x=>x.classList.toggle('selected', x===c)); validateSelect(); });
-    $('pace-slider').addEventListener('input', ()=>{ const v=+$('pace-slider').value;
-      $('pace-labels').querySelectorAll('span').forEach(s=> s.classList.toggle('active', +s.dataset.idx===v)); });
+    $('pace-chips').addEventListener('click', e=>{ const c=e.target.closest('.chip'); if(!c) return;
+      $('pace-chips').querySelectorAll('.chip').forEach(x=>x.classList.toggle('selected', x===c)); validateSelect(); });
     $('region-input').addEventListener('input', validateSelect);
     function validateSelect(){
       const ok = $('style-chips').querySelectorAll('.chip.selected').length>0
+        && $('pace-chips').querySelector('.chip.selected')
         && $('companion-chips').querySelector('.chip.selected')
         && $('region-input').value.trim().length>0;
       $('to-recommend').disabled = !ok;
     }
     $('to-recommend').addEventListener('click', () => {
       preferences.styles = [...$('style-chips').querySelectorAll('.chip.selected')].map(c=>c.dataset.value);
-      preferences.pace = ['slow','balanced','fast'][+$('pace-slider').value];
+      preferences.pace = $('pace-chips').querySelector('.chip.selected').dataset.value;
       preferences.companion = $('companion-chips').querySelector('.chip.selected').dataset.value;
       preferences.region = $('region-input').value.trim();
       preferences.extra = $('extra-input').value.trim();

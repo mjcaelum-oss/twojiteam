@@ -11,19 +11,17 @@ import type { ScoredSpot } from '../../features/recommendations/recommendation.t
 import { getSpots } from '../../features/recommendations/recommendation.service';
 import { openAIRecommendationsToSpots, requestOpenAIRecommendations } from '../../services/openai/openaiRecommendation.service';
 import { useTravelPlan } from '../../app/providers/TravelPlanProvider';
-import { loadGoogleMaps } from '../../features/map/googleMaps.loader';
-import { requestRoute } from '../../features/routes/route.service';
-import type { CalculatedRoute } from '../../features/routes/route.service';
-import { transportLabels } from '../../data/constants/travel.constants';
-import type { TransportMode } from '../../types/travelPlan';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { LIKED_KEY, seedLikedSpots, toggleLikedSpot } from '../../features/favorites/favorites.store';
 import type { LikedSpot } from '../../features/favorites/favorites.store';
+import { transportLabels } from '../../data/constants/travel.constants';
+import type { TransportMode } from '../../types/travelPlan';
 import styles from './RecommendationPage.module.css';
 
 export function RecommendationPage() {
-  const navigate = useNavigate(); const { plan, addSpot, setTransport, setRoute } = useTravelPlan(); const [candidates, setCandidates] = useState<ScoredSpot[]>([]); const [current, setCurrent] = useState<ScoredSpot | undefined>(); const [routeOptions, setRouteOptions] = useState<Partial<Record<TransportMode, CalculatedRoute>>>({}); const [error, setError] = useState(''); const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); const { plan, addSpot } = useTravelPlan(); const [candidates, setCandidates] = useState<ScoredSpot[]>([]); const [rejected, setRejected] = useState<string[]>([]); const [current, setCurrent] = useState<ScoredSpot | undefined>(); const [error, setError] = useState(''); const [loading, setLoading] = useState(false);
   const [liked, setLiked] = useLocalStorage<LikedSpot[]>(LIKED_KEY, seedLikedSpots);
+  const [selectedMode, setSelectedMode] = useState<TransportMode>('DRIVING');
   const toggleLike = (spot: ScoredSpot) => setLiked((list) => toggleLikedSpot(list, { id: spot.id, name: spot.name, region: spot.region }));
   const choose = (spot: ScoredSpot) => { setCurrent(spot); addSpot(spot); };
   const legIndex = plan ? plan.spots.length - 2 : -1;
@@ -49,6 +47,7 @@ export function RecommendationPage() {
   const selectedRoute = legIndex >= 0 && plan ? plan.routes[legIndex] : null;
   const mapColors = useMemo(() => new Map([...plan?.spots.map((item) => item.spot) ?? [], ...candidates].map((spot, index) => [spot.id, getSpotColor(index)])), [plan?.spots, candidates]);
   if (!plan) return null;
+  const finish = () => { if (current) addSpot(current, selectedMode); navigate('/review'); };
   return (
     <>
       <Header />
@@ -90,7 +89,8 @@ export function RecommendationPage() {
             </>}
             <div className={styles.actions}>
               <Button variant="secondary" type="button" onClick={() => navigate('/')}>처음부터</Button>
-              <Button type="button" disabled={!plan.spots.length || awaitingTransport} onClick={() => navigate('/review')}>계획 수립 완료</Button>
+              <Button type="button" disabled={!current} onClick={finish}>이 장소 선택</Button>
+              <Button variant="secondary" type="button" disabled={!plan.spots.length} onClick={() => navigate('/review')}>계획 검토</Button>
             </div>
             <div className={styles.selected}>
               <h3>내 여행 목록</h3>
