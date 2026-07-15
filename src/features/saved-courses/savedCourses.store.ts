@@ -17,6 +17,11 @@ export function addSavedCourse(course: SavedCourse): SavedCourse[] {
   writeLocal(KEY, next);
   return next;
 }
+export function removeSavedCourse(id: string): SavedCourse[] {
+  const next = getSavedCourses().filter((course) => course.id !== id);
+  writeLocal(KEY, next);
+  return next;
+}
 export function planToCourse(plan: TravelPlan): SavedCourse {
   const spots: CourseSpot[] = plan.spots.map((item) => ({
     name: item.spot.name,

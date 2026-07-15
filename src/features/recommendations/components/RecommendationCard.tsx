@@ -15,7 +15,7 @@ export function RecommendationCard({ spot, selected, liked = false, mapColor, on
   return (
     <article className={`${styles.card} ${selected ? styles.selected : ''}`}>
       {onToggleLike && (
-        <button type="button" className={`${styles.heart} ${liked ? styles.hearted : ''}`} aria-label={liked ? '찜 해제' : '찜하기'} aria-pressed={liked} onClick={onToggleLike}>
+        <button type="button" className={`${styles.heart} ${liked ? styles.hearted : ''}`} aria-label={liked ? '찜 해제' : '찜하기'} aria-pressed={liked} onClick={(event) => { event.stopPropagation(); onToggleLike(); }}>
           {liked ? heartFill : heartOutline}
         </button>
       )}
