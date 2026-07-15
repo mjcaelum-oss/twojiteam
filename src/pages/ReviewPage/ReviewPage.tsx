@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Header } from '../../components/layout/Header/Header';
 import { PageContainer } from '../../components/layout/PageContainer/PageContainer';
 import { Button } from '../../components/common/Button/Button';
@@ -9,6 +9,7 @@ import { useTravelPlan } from '../../app/providers/TravelPlanProvider';
 import { buildSchedule, validateSchedule } from '../../features/schedule-validation/scheduleValidation.service';
 import type { TransportMode } from '../../types/travelPlan';
 import { getItineraryTotals } from '../../features/itinerary/itinerary.service';
+import { addSavedCourse, planToCourse } from '../../features/saved-courses/savedCourses.store';
 import styles from './ReviewPage.module.css';
 
 export function ReviewPage() {
@@ -17,7 +18,7 @@ export function ReviewPage() {
   const schedule = useMemo(() => plan ? buildSchedule(plan) : [], [plan]); const warnings = useMemo(() => plan ? validateSchedule(plan) : [], [plan]);
   if (!plan) return null;
   const { visitMinutes, travelMinutes, estimatedCost: cost } = getItineraryTotals(plan);
-  const savePlan = async () => { await save(); setSaved(true); };
+  const savePlan = async () => { await save(); addSavedCourse(planToCourse(plan)); setSaved(true); };
   return (
     <>
       <Header />
@@ -73,7 +74,7 @@ export function ReviewPage() {
               <Button type="button" onClick={savePlan}>저장</Button>
               <Button variant="secondary" type="button" onClick={() => { setPlan(null); navigate('/'); }}>새 여행 계획</Button>
             </div>
-            {saved && <p className={styles.saved} role="status">여행 계획을 저장했습니다.</p>}
+            {saved && <p className={styles.saved} role="status">여행 계획을 저장했어요. <Link to="/mypage">마이페이지에서 보기</Link></p>}
           </section>
         </div>
       </PageContainer>

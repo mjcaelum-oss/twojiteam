@@ -1,4 +1,4 @@
-.page { padding-bottom: 3rem; }
+.page { padding: 1.75rem 0 3rem; }
 .layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); gap: 1rem; align-items: start; }
 .mapCol { position: sticky; top: 76px; align-self: start; }
 .panel { padding: 1.5rem; display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: var(--radius-xl); box-shadow: var(--shadow); }
