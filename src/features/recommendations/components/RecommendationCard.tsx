@@ -10,7 +10,7 @@ const heartFill = <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20s-
 
 const estMinutes = (km: number) => Math.max(5, Math.round((km / 50) * 60)); // 약 50km/h 가정 미리보기
 
-export function RecommendationCard({ spot, selected, liked = false, mapColor, onSelect, onToggleLike }: { spot: ScoredSpot; selected: boolean; liked?: boolean; mapColor?: SpotColor; onSelect: () => void; onToggleLike?: () => void }) {
+export function RecommendationCard({ spot, selected, liked = false, mapColor, onSelect, onReject, onToggleLike }: { spot: ScoredSpot; selected: boolean; liked?: boolean; mapColor?: SpotColor; onSelect: () => void; onReject: () => void; onToggleLike?: () => void }) {
   const hasDistance = spot.distanceKm !== undefined;
   return (
     <article className={`${styles.card} ${selected ? styles.selected : ''}`}>
@@ -32,7 +32,6 @@ export function RecommendationCard({ spot, selected, liked = false, mapColor, on
           {mapColor && <span className={styles.mapColor} style={{ backgroundColor: mapColor.value }}>지도 {mapColor.name}</span>}
           <p className={styles.desc}>{spot.region} · {spot.description}</p>
           {spot.tags.length > 0 && <div className={styles.tags}>{spot.tags.slice(0, 3).map((tag) => <span key={tag} className={styles.tag}>#{tag}</span>)}</div>}
-          <p className={styles.desc}>{spot.description}</p>
           {spot.reason && <p className={styles.reason}>{spot.reason}</p>}
         </div>
       </button>

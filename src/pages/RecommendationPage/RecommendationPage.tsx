@@ -11,6 +11,9 @@ import type { ScoredSpot } from '../../features/recommendations/recommendation.t
 import { getSpots } from '../../features/recommendations/recommendation.service';
 import { openAIRecommendationsToSpots, requestOpenAIRecommendations } from '../../services/openai/openaiRecommendation.service';
 import { useTravelPlan } from '../../app/providers/TravelPlanProvider';
+import { loadGoogleMaps } from '../../features/map/googleMaps.loader';
+import { requestRoute } from '../../features/routes/route.service';
+import type { CalculatedRoute } from '../../features/routes/route.service';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { LIKED_KEY, seedLikedSpots, toggleLikedSpot } from '../../features/favorites/favorites.store';
 import type { LikedSpot } from '../../features/favorites/favorites.store';
@@ -19,17 +22,17 @@ import type { TransportMode } from '../../types/travelPlan';
 import styles from './RecommendationPage.module.css';
 
 export function RecommendationPage() {
-  const navigate = useNavigate(); const { plan, addSpot } = useTravelPlan(); const [candidates, setCandidates] = useState<ScoredSpot[]>([]); const [rejected, setRejected] = useState<string[]>([]); const [current, setCurrent] = useState<ScoredSpot | undefined>(); const [error, setError] = useState(''); const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); const { plan, addSpot, setTransport, setRoute } = useTravelPlan(); const [candidates, setCandidates] = useState<ScoredSpot[]>([]); const [rejected, setRejected] = useState<string[]>([]); const [current, setCurrent] = useState<ScoredSpot | undefined>(); const [routeOptions, setRouteOptions] = useState<Partial<Record<TransportMode, CalculatedRoute>>>({}); const [error, setError] = useState(''); const [loading, setLoading] = useState(false);
   const [liked, setLiked] = useLocalStorage<LikedSpot[]>(LIKED_KEY, seedLikedSpots);
-  const [selectedMode, setSelectedMode] = useState<TransportMode>('DRIVING');
   const toggleLike = (spot: ScoredSpot) => setLiked((list) => toggleLikedSpot(list, { id: spot.id, name: spot.name, region: spot.region }));
   const choose = (spot: ScoredSpot) => { setCurrent(spot); addSpot(spot); };
+  const reject = (spot: ScoredSpot) => { setRejected((ids) => ids.includes(spot.id) ? ids : [...ids, spot.id]); if (current?.id === spot.id) setCurrent(undefined); };
   const legIndex = plan ? plan.spots.length - 2 : -1;
   const origin = legIndex >= 0 && plan ? plan.spots[legIndex].spot : undefined;
   const destination = legIndex >= 0 && plan ? plan.spots[legIndex + 1].spot : undefined;
   const mode = legIndex >= 0 && plan ? plan.spots[legIndex + 1].transportMode ?? 'DRIVING' : 'DRIVING';
   const awaitingTransport = Boolean(plan && legIndex >= 0 && !plan.routes[legIndex]);
-  useEffect(() => { if (!plan) { navigate('/'); return; } if (awaitingTransport) return; let active = true; setLoading(true); setError(''); void getSpots(plan.destination).then(async (spots) => { const response = await requestOpenAIRecommendations({ destination: plan.destination, preferences: plan.preferences, spots, selectedIds: plan.spots.map((item) => item.spot.id), rejectedIds: [], previousSpotId: plan.spots.at(-1)?.spot.id }); if (active) setCandidates(openAIRecommendationsToSpots(response, spots)); }).catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : 'OpenAI 추천에 실패했습니다.'); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [navigate, plan, awaitingTransport]);
+  useEffect(() => { if (!plan) { navigate('/'); return; } if (awaitingTransport) return; let active = true; setLoading(true); setError(''); void getSpots(plan.destination).then(async (spots) => { const response = await requestOpenAIRecommendations({ destination: plan.destination, preferences: plan.preferences, spots, selectedIds: plan.spots.map((item) => item.spot.id), rejectedIds: rejected, previousSpotId: plan.spots.at(-1)?.spot.id }); if (active) setCandidates(openAIRecommendationsToSpots(response, spots)); }).catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : 'OpenAI 추천에 실패했습니다.'); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [navigate, plan, awaitingTransport, rejected]);
   useEffect(() => {
     if (!plan || !origin || !destination) return;
     let active = true;
@@ -47,7 +50,6 @@ export function RecommendationPage() {
   const selectedRoute = legIndex >= 0 && plan ? plan.routes[legIndex] : null;
   const mapColors = useMemo(() => new Map([...plan?.spots.map((item) => item.spot) ?? [], ...candidates].map((spot, index) => [spot.id, getSpotColor(index)])), [plan?.spots, candidates]);
   if (!plan) return null;
-  const finish = () => { if (current) addSpot(current, selectedMode); navigate('/review'); };
   return (
     <>
       <Header />
@@ -83,14 +85,13 @@ export function RecommendationPage() {
               <p className="hint">Google Places 후보를 GPT agent가 취향과 이동 조건에 맞춰 골라드립니다.</p>
               {loading ? <div className="loading">다음 관광지 후보를 준비하는 중입니다.</div> : (
                 <div className={styles.cards}>
-                  {candidates.length ? candidates.map((spot) => <RecommendationCard key={spot.id} spot={spot} selected={current?.id === spot.id} mapColor={mapColors.get(spot.id)} liked={liked.some((item) => item.id === spot.id)} onSelect={() => choose(spot)} onToggleLike={() => toggleLike(spot)} />) : <div className="complete">추천 후보가 없습니다. API 설정과 검색 반경을 확인하세요.</div>}
+                  {candidates.length ? candidates.map((spot) => <RecommendationCard key={spot.id} spot={spot} selected={current?.id === spot.id} mapColor={mapColors.get(spot.id)} liked={liked.some((item) => item.id === spot.id)} onSelect={() => choose(spot)} onReject={() => reject(spot)} onToggleLike={() => toggleLike(spot)} />) : <div className="complete">추천 후보가 없습니다. API 설정과 검색 반경을 확인하세요.</div>}
                 </div>
               )}
             </>}
             <div className={styles.actions}>
               <Button variant="secondary" type="button" onClick={() => navigate('/')}>처음부터</Button>
-              <Button type="button" disabled={!current} onClick={finish}>이 장소 선택</Button>
-              <Button variant="secondary" type="button" disabled={!plan.spots.length} onClick={() => navigate('/review')}>계획 검토</Button>
+              <Button type="button" disabled={!plan.spots.length || awaitingTransport} onClick={() => navigate('/review')}>계획 수립 완료</Button>
             </div>
             <div className={styles.selected}>
               <h3>내 여행 목록</h3>
