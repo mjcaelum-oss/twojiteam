@@ -1,5 +1,6 @@
 declare namespace google.maps {
   interface LatLngLiteral { lat: number; lng: number }
+  interface LatLng { lat(): number; lng(): number }
   class Map { constructor(element: HTMLElement, options?: { center?: LatLngLiteral; zoom?: number }); setCenter(center: LatLngLiteral): void; panTo(center: LatLngLiteral): void; }
   class Marker { constructor(options: { map: Map; position: LatLngLiteral; title?: string }); setMap(map: Map | null): void; setZIndex(index: number): void; }
   class InfoWindow { constructor(); setContent(content: string): void; open(map: Map, marker: Marker): void; }
@@ -10,7 +11,7 @@ declare namespace google.maps {
   function importLibrary(name: string): Promise<Record<string, unknown>>;
 }
 declare namespace google.maps.places {
-  interface PlaceData { id?: string; displayName?: { text?: string }; location?: LatLngLiteral; formattedAddress?: string; googleMapsURI?: string; types?: string[]; rating?: number; userRatingCount?: number; }
+  interface PlaceData { id?: string; displayName?: string; location?: google.maps.LatLng; formattedAddress?: string; googleMapsURI?: string; types?: string[]; rating?: number; userRatingCount?: number; }
   class Place { static searchNearby(request: Record<string, unknown>): Promise<{ places?: PlaceData[] }>; }
 }
 interface Window { initTravelPickMap?: () => void; gm_authFailure?: () => void; }
