@@ -18,6 +18,31 @@ npm run dev
 
 `npm run dev`로 실행하면 Vite가 `/api/recommendations`를 로컬 미들웨어로 연결하므로 배포 없이 추천 API를 확인할 수 있습니다. `.env.local`에 `OPENAI_API_KEY`를 넣으면 실제 OpenAI 추천을 호출하며, 키가 없으면 API가 설정 오류를 반환합니다. 환경변수 변경 후에는 개발 서버를 재시작하세요.
 
+### Langfuse tracing and evaluation
+
+Run the local Langfuse stack from `langfuse/` and add the project keys to
+`langfuse/.env`:
+
+```env
+LANGFUSE_PUBLIC_KEY=pk-lf-...
+LANGFUSE_SECRET_KEY=sk-lf-...
+LANGFUSE_BASE_URL=http://localhost:3000
+```
+
+Restart `npm run dev`, make one recommendation request, then open
+`http://localhost:3000` → `Tracing`. The recommendation API records a root
+request observation and a nested OpenAI generation, including response usage
+when OpenAI returns it.
+
+To create a demo dataset and run the evaluation with a preferred-category
+pass-rate score, keep the Vite app running in another terminal and run:
+
+```bash
+npm run langfuse:eval
+```
+
+Then open `Datasets` → `travel-recommendation-demo` → `Runs` in Langfuse.
+
 ## 환경변수와 데이터 모드
 
 `.env.local`에 `.env.example`의 값을 넣습니다. 관광지 데이터는 mock 목록을 사용하지 않고 Google Places에서 조회합니다. `VITE_DATA_MODE=supabase`는 여행 계획 저장소 선택에만 사용하며, Supabase 설정이 없을 때 명확한 오류를 보여줍니다.
