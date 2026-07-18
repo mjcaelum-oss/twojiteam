@@ -22,3 +22,11 @@ h2 { margin: .4rem 0 .5rem; line-height: 1.25; }
 .card-select strong, .card-select span, .card-select small { display: block; }
 .card-select span, .card-select small { margin-top: .2rem; color: var(--muted); }
 .card-select small { color: var(--brand-strong); }
+.page-container { animation: pageEnter .32s ease both; }
+button, a, input, select, textarea { transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease, opacity .2s ease; }
+.button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(15, 23, 42, .1); }
+.button:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
+@keyframes pageEnter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}

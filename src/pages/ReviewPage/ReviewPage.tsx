@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Header } from '../../components/layout/Header/Header';
 import { PageContainer } from '../../components/layout/PageContainer/PageContainer';
@@ -7,7 +8,7 @@ import { TravelMap } from '../../features/map/components/TravelMap';
 import { transportLabels } from '../../data/constants/travel.constants';
 import { useTravelPlan } from '../../app/providers/TravelPlanProvider';
 import { buildSchedule, validateSchedule } from '../../features/schedule-validation/scheduleValidation.service';
-import type { TransportMode } from '../../types/travelPlan';
+import type { TransportMode, TravelPlan } from '../../types/travelPlan';
 import { getItineraryTotals } from '../../features/itinerary/itinerary.service';
 import { addSavedCourse, planToCourse } from '../../features/saved-courses/savedCourses.store';
 import { requestRoute } from '../../features/routes/route.service';
@@ -15,9 +16,17 @@ import { formatRouteCost } from '../../features/routes/routeCost.utils';
 import { loadGoogleMaps } from '../../features/map/googleMaps.loader';
 import styles from './ReviewPage.module.css';
 
+const transportIcon = (mode: TransportMode, details?: string) => {
+  if (mode === 'WALKING') return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="13" cy="4" r="2" /><path d="m11 8 3 2 2 4M11 8l-2 6-3 5M12 10l-1 5 4 5" /></svg>;
+  if (mode === 'DRIVING') return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M5 16l1.5-5A2 2 0 0 1 8.4 9.5h7.2a2 2 0 0 1 1.9 1.5L19 16" /><rect x="3" y="16" width="18" height="4" rx="1" /><circle cx="7" cy="20" r="1" /><circle cx="17" cy="20" r="1" /></svg>;
+  if (details?.includes('지하철')) return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x="5" y="3" width="14" height="16" rx="4" /><path d="M8 19l-2 3M16 19l2 3M5 14h14M8 7h8" /><circle cx="9" cy="12" r="1" /><circle cx="15" cy="12" r="1" /></svg>;
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x="4" y="5" width="16" height="14" rx="2" /><path d="M4 14h16M8 19l-2 3M16 19l2 3M7 9h10" /><circle cx="8" cy="16" r="1" /><circle cx="16" cy="16" r="1" /></svg>;
+};
+
 export function ReviewPage() {
-  const navigate = useNavigate(); const { plan, setPlan, removeSpot, reorderSpot, setTransport, setRoute, save } = useTravelPlan(); const [saved, setSaved] = useState(false); const [saving, setSaving] = useState(false); const [saveComplete, setSaveComplete] = useState(false); const [draggedId, setDraggedId] = useState<string | null>(null); const [selectedDate, setSelectedDate] = useState('');
-  useEffect(() => { if (!plan || !plan.spots.length) navigate('/'); }, [navigate, plan]);
+  const navigate = useNavigate(); const { plan, setPlan, removeSpot, reorderSpot, setTransport, setRoute, save } = useTravelPlan(); const [saved, setSaved] = useState(false); const [saving, setSaving] = useState(false); const [saveComplete, setSaveComplete] = useState(false); const [saveError, setSaveError] = useState(''); const [draggedId, setDraggedId] = useState<string | null>(null); const [selectedDate, setSelectedDate] = useState(''); const [undoPlan, setUndoPlan] = useState<TravelPlan | null>(null); const [saveDialogOpen, setSaveDialogOpen] = useState(false); const [courseTitleDraft, setCourseTitleDraft] = useState('');
+  useEffect(() => { if (!plan) navigate('/'); }, [navigate, plan]);
+  useEffect(() => { if (!undoPlan) return; const timeout = window.setTimeout(() => setUndoPlan(null), 5000); return () => window.clearTimeout(timeout); }, [undoPlan]);
   const routeKey = plan?.spots.slice(0, -1).map((item, index) => `${item.spot.id}:${plan.spots[index + 1].spot.id}:${plan.spots[index + 1].transportMode ?? 'DRIVING'}`).join('|') ?? '';
   useEffect(() => {
     if (!plan || plan.spots.length < 2) return;
@@ -48,14 +57,28 @@ export function ReviewPage() {
   if (!plan) return null;
   const selectedDayPlan = { ...plan, spots: visibleSpots.map(({ item }) => item), routes: visibleRoutes.map((_, index) => plan.routes[visibleSpots[index].index]) };
   const { visitMinutes, travelMinutes, estimatedCost: cost, currency } = getItineraryTotals(selectedDayPlan);
-  const savePlan = async () => {
+  const deleteSpot = (id: string) => { if (!plan) return; setUndoPlan(plan); setSaved(false); removeSpot(id); };
+  const restoreDeletedSpot = () => { if (!undoPlan) return; setPlan(undoPlan); setUndoPlan(null); };
+  const openSaveDialog = () => { setCourseTitleDraft(plan.title); setSaveError(''); setSaveDialogOpen(true); };
+  const savePlan = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (saving) return;
-    await save();
-    addSavedCourse(planToCourse(plan));
-    setSaved(true);
+    const namedPlan = { ...plan, title: courseTitleDraft.trim() || plan.title };
     setSaving(true);
-    window.setTimeout(() => setSaveComplete(true), 1050);
-    window.setTimeout(() => navigate('/mypage'), 2450);
+    setSaveComplete(false);
+    setSaveError('');
+    try {
+      await save(namedPlan);
+      setPlan(namedPlan);
+      addSavedCourse(planToCourse(namedPlan));
+      setSaveDialogOpen(false);
+      setSaved(true);
+      window.setTimeout(() => setSaveComplete(true), 1050);
+      window.setTimeout(() => navigate('/mypage'), 2450);
+    } catch (reason: unknown) {
+      setSaving(false);
+      setSaveError(reason instanceof Error ? reason.message : '여행 계획을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+    }
   };
   return (
     <>
@@ -83,24 +106,26 @@ export function ReviewPage() {
                 return (
                   <li key={item.spot.id} draggable onDragStart={() => setDraggedId(item.spot.id)} onDragOver={(event) => event.preventDefault()} onDrop={() => { if (draggedId) reorderSpot(draggedId, index); setDraggedId(null); }} onDragEnd={() => setDraggedId(null)} aria-grabbed={draggedId === item.spot.id}>
                       <div className={styles.ticket}>
-                      <div className={styles.dragHandle} aria-label="드래그하여 방문 순서 변경">⠿</div>
+                      <div className={styles.dragTools}>
+                        <div className={styles.dragHandle} aria-label="드래그하여 방문 순서 변경">⠿</div>
+                        <button type="button" className={styles.deleteButton} aria-label={`${item.spot.name} 삭제`} title="관광지 삭제" onClick={() => deleteSpot(item.spot.id)}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M6 6l12 12M18 6L6 18" /></svg>
+                        </button>
+                      </div>
                       <div className={styles.index}>{index + 1}</div>
                       <div className={styles.thumb}>{item.spot.photoUrl ? <img src={item.spot.photoUrl} alt="" /> : item.spot.name.trim().charAt(0)}</div>
                       <div className={styles.ticketBody}>
                         <strong>{item.travelDate ?? plan.travelDate} · {item.spot.name}</strong>
                         <span>{item.spot.region} · {item.spot.feeAmount ? `${item.spot.feeAmount.toLocaleString()}원` : item.spot.feeNote} · {item.spot.durationMinutes}분</span>
                         <small>{itemSchedule?.arrival.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} 도착 예상</small>
-                        <div className={styles.itemActions}>
-                          <Button variant="secondary" type="button" onClick={() => removeSpot(item.spot.id)}>삭제</Button>
-                        </div>
                       </div>
                     </div>
                     {visibleIndex < visibleSpots.length - 1 && visibleSpots[visibleIndex + 1].index === index + 1 && (
                       <div className={styles.leg}>
-                        <label className={styles.transport}>이동
+                        <label className={styles.transport}><span className={styles.transportTitle}>{transportIcon(mode, route?.transitDetails)}</span>
                           <select value={mode} onChange={(event) => { const nextMode = event.target.value as TransportMode; setTransport(index, nextMode); setRoute(index, null); }}>{Object.entries(transportLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
                         </label>
-                        <span className={styles.legInfo}>{route ? (route.error ? route.error : `${route.durationMinutes}분 · ${(route.distanceMeters / 1000).toFixed(1)}km${route.cost !== null && route.costNote ? ` · ${formatRouteCost(route.cost, route.costCurrency)}` : ''}`) : '경로 계산 중'}</span>
+                        <span className={styles.legInfo}>{route ? (route.error ? route.error : `${route.durationMinutes}분 · ${(route.distanceMeters / 1000).toFixed(1)}km${route.transitDetails ? ` · ${route.transitDetails}` : ''}${route.cost !== null && route.costNote ? ` · ${formatRouteCost(route.cost, route.costCurrency)}` : ''}`) : '경로 계산 중'}</span>
                       </div>
                     )}
                   </li>
@@ -109,10 +134,12 @@ export function ReviewPage() {
             </ol>
             <div className={styles.actions}>
               <Button variant="secondary" type="button" onClick={() => navigate('/recommendations')}>계획 수정</Button>
-              <Button type="button" onClick={() => void savePlan()} disabled={saving}>{saving ? '저장 중...' : '저장'}</Button>
+              <Button type="button" onClick={openSaveDialog}>저장</Button>
               <Button variant="secondary" type="button" onClick={() => { setPlan(null); navigate('/'); }}>새 여행 계획</Button>
             </div>
             {saved && <p className={styles.saved} role="status">여행 계획을 저장했어요. <Link to="/mypage">마이페이지에서 보기</Link></p>}
+            {undoPlan && <div className={styles.undoMessage} role="status" aria-live="polite">관광지를 삭제했어요. <button type="button" onClick={restoreDeletedSpot}>복구</button></div>}
+            {saveDialogOpen && <div className={styles.modalBackdrop} role="presentation"><form className={styles.saveDialog} role="dialog" aria-modal="true" aria-labelledby="save-dialog-title" onSubmit={savePlan}><h3 id="save-dialog-title">여행 계획 저장</h3><label htmlFor="course-title">계획 이름</label><input id="course-title" value={courseTitleDraft} onChange={(event) => setCourseTitleDraft(event.target.value)} autoFocus maxLength={60} />{saveError && <div className={styles.warnings} role="alert"><strong>저장하지 못했습니다</strong><p>{saveError}</p></div>}<div className={styles.dialogActions}><Button variant="secondary" type="button" onClick={() => setSaveDialogOpen(false)} disabled={saving}>취소</Button><Button type="submit" disabled={saving}>{saving ? '저장 중...' : '저장'}</Button></div></form></div>}
           </section>
         </div>
       </PageContainer>

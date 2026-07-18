@@ -12,7 +12,7 @@ import { getSpots } from '../../features/recommendations/recommendation.service'
 import { openAIRecommendationsToSpots, requestOpenAIRecommendations } from '../../services/openai/openaiRecommendation.service';
 import { useTravelPlan } from '../../app/providers/TravelPlanProvider';
 import { loadGoogleMaps } from '../../features/map/googleMaps.loader';
-import { requestRoute } from '../../features/routes/route.service';
+import { NEARBY_ROUTE_UNAVAILABLE, requestRoute } from '../../features/routes/route.service';
 import { formatRouteCost } from '../../features/routes/routeCost.utils';
 import type { CalculatedRoute } from '../../features/routes/route.service';
 import { buildSchedule } from '../../features/schedule-validation/scheduleValidation.service';
@@ -42,7 +42,8 @@ export function RecommendationPage() {
   const departureTime = plan && legIndex >= 0 ? buildSchedule(plan)[legIndex]?.departure : undefined;
   const recommendationTime = plan && lastDayIndex >= 0 ? buildSchedule(plan)[lastDayIndex]?.departure.toTimeString().slice(0, 5) : plan?.dayStartTimes?.[selectedDate] ?? plan?.startTime;
   const dayNumber = Math.max(1, planningDates.indexOf(selectedDate) + 1);
-  useEffect(() => { if (!plan) { navigate('/'); return; } if (awaitingTransport || !plan.dayStartTimes?.[selectedDate]) return; let active = true; setLoading(true); setError(''); void getSpots(plan.destination).then(async (spots) => { const response = await requestOpenAIRecommendations({ destination: plan.destination, preferences: plan.preferences, spots, selectedIds: plan.spots.map((item) => item.spot.id), rejectedIds: rejected, previousSpotId: lastDaySpot?.spot.id, previousVenueType: lastDaySpot?.spot.venueType, recommendationTime }); if (active) setCandidates(openAIRecommendationsToSpots(response, spots)); }).catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : 'OpenAI 추천에 실패했습니다.'); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [navigate, plan, awaitingTransport, rejected, selectedDate, lastDaySpot?.spot.id, lastDaySpot?.spot.venueType, recommendationTime]);
+  const groupedSpots = planningDates.map((date, index) => ({ date, dayNumber: index + 1, spots: plan?.spots.filter((item) => (item.travelDate ?? plan.travelDate) === date) ?? [] }));
+  useEffect(() => { if (!plan) { navigate('/'); return; } if (awaitingTransport || !plan.dayStartTimes?.[selectedDate]) return; let active = true; setLoading(true); setError(''); void getSpots(plan.destination).then(async (spots) => { const response = await requestOpenAIRecommendations({ destination: plan.destination, preferences: plan.preferences, spots, selectedIds: plan.spots.map((item) => item.spot.id), rejectedIds: rejected, previousSpotId: lastDaySpot?.spot.id, previousVenueType: lastDaySpot?.spot.venueType, recommendationDate: selectedDate, recommendationTime }); if (active) setCandidates(openAIRecommendationsToSpots(response, spots)); }).catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : 'OpenAI 추천에 실패했습니다.'); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [navigate, plan, awaitingTransport, rejected, selectedDate, lastDaySpot?.spot.id, lastDaySpot?.spot.venueType, recommendationTime]);
   useEffect(() => {
     if (!plan || !origin || !destination) return;
     let active = true;
@@ -79,13 +80,14 @@ export function RecommendationPage() {
               {origin && destination && <div className={styles.transportChoice}>
                 <h3>{origin.name}에서 {destination.name}까지 이동</h3>
                 <p className="hint">이동수단을 선택하면 해당 경로가 지도에 표시됩니다.</p>
+                {Object.values(routeOptions).some((route) => route?.summary.error === NEARBY_ROUTE_UNAVAILABLE) && <p className="hint">두 장소가 100m 이내로 가까워 자동차·대중교통 경로가 제공되지 않습니다. 도보를 이용해주세요.</p>}
                 <div className={styles.transportOptions}>
                   {(Object.keys(transportLabels) as TransportMode[]).map((transport) => {
                     const route = routeOptions[transport];
                     return <button key={transport} type="button" className={`${styles.transportOption} ${mode === transport ? styles.transportSelected : ''}`} onClick={() => chooseTransport(transport)} disabled={!route || Boolean(route.summary.error)} aria-pressed={mode === transport}>
                       <strong>{transportLabels[transport]}</strong>
-                      <span>{route?.summary.error ? `경로 계산 실패: ${route.summary.error}` : route ? `${route.summary.durationMinutes}분${route.summary.cost !== null && route.summary.costNote ? ` · ${formatRouteCost(route.summary.cost, route.summary.costCurrency)}` : ''}` : '계산 중...'}</span>
-                      {route?.summary.costNote && <small>{route.summary.costNote}</small>}
+                      <span>{route?.summary.error === NEARBY_ROUTE_UNAVAILABLE ? '거리가 가까워 경로 안내 불가' : route?.summary.error ? `경로 계산 실패: ${route.summary.error}` : route ? `${route.summary.durationMinutes}분${route.summary.cost !== null && route.summary.costNote ? ` · ${formatRouteCost(route.summary.cost, route.summary.costCurrency)}` : ''}` : '계산 중...'}</span>
+                      {route?.summary.error === NEARBY_ROUTE_UNAVAILABLE ? <small>가까운 장소는 이 이동수단을 안내하지 않습니다.</small> : route?.summary.transitDetails ? <small>{route.summary.transitDetails}</small> : transport !== 'TRANSIT' && route?.summary.costNote && <small>{route.summary.costNote}</small>}
                     </button>;
                   })}
                 </div>
@@ -114,8 +116,11 @@ export function RecommendationPage() {
               <Button type="button" disabled={!plan.spots.length || awaitingTransport} onClick={() => navigate('/review')}>계획 수립 완료</Button>
             </div>
             <div className={styles.selected}>
-              <h3>내 여행 목록</h3>
-              {plan.spots.length ? <ol>{plan.spots.map((item) => <li key={item.spot.id}>{item.travelDate ?? plan.travelDate} · {item.spot.name}</li>)}</ol> : <p>아직 선택한 장소가 없습니다.</p>}
+              <div className={styles.selectedHeader}><div><span className={styles.selectedEyebrow}>MY ITINERARY</span><h3>내 여행 목록</h3></div><span className={styles.selectedCount}>{plan.spots.length}곳</span></div>
+              {plan.spots.length ? <div className={styles.dayPlans}>{groupedSpots.map(({ date, dayNumber: planDayNumber, spots }) => <div key={date} className={`${styles.dayPlan} ${date === selectedDate ? styles.dayPlanActive : ''} ${!spots.length ? styles.dayPlanEmpty : ''}`}>
+                <div className={styles.dayPlanHeader}><span className={styles.dayNumber}>DAY {String(planDayNumber).padStart(2, '0')}</span><span>{date}</span><strong>{spots.length}곳</strong></div>
+                {spots.length ? <ol>{spots.map((item, index) => <li key={item.spot.id}><span className={styles.selectedOrder}>{index + 1}</span><span className={styles.selectedThumb}>{item.spot.photoUrl ? <img src={item.spot.photoUrl} alt="" /> : item.spot.name.trim().charAt(0)}</span><span className={styles.selectedName}>{item.spot.name}</span>{index < spots.length - 1 && <span className={styles.selectedArrow}>›</span>}</li>)}</ol> : <p>아직 선택한 장소가 없습니다.</p>}
+              </div>)}</div> : <div className={styles.selectedEmpty}><span className={styles.emptyIcon}>＋</span><p>아직 선택한 장소가 없습니다.</p><small>추천 카드에서 장소를 선택하면 여기에 일정이 쌓입니다.</small></div>}
             </div>
           </section>
         </div>
@@ -123,12 +128,6 @@ export function RecommendationPage() {
     </>
   );
 }
-
-
-
-
-
-
 
 
 
